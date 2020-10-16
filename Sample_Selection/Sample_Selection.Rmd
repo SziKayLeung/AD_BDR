@@ -27,6 +27,7 @@ suppressMessages(library("plyr")) # rename factors in columns
 suppressMessages(library("DT")) 
 suppressMessages(library("ggplot2")) 
 suppressMessages(library("wesanderson")) # colours 
+suppressMessages(library("stringr")) # str_replace 
 
 source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/ad_bdr/Rmarkdown_Input.R")
 ```
@@ -36,21 +37,25 @@ source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/ad_bdr/Rmar
 - Braak-Stage, starting off first with 0 and 6  
 - RINscore and concentration
 
+Caveats: 
+- Good mix of gender, ages and APOE genotype
+- PMI 
+- FACS selected 
+
 ## Input Files {.tabset .tabset-pills}
 
-1. Phenotype Data from 96 samples - *Filename = 96_samples.csv*  
-2. Phenotype Data from 133 samples - *Filename = 96_samples.csv*  
-3. RIN values from RNA extracted by G.Wheildon - *Filename = BDR_96_RNA_QC_2020-09-02 - 11-33-54-RNA_sampleTable.csv*
+1. Phenotype Data from 96 samples - *Filename = 96_samples_all_v2.csv*  
+2. RIN values from RNA extracted by G.Wheildon - *Filename = BDR_96_RNA_QC_2020-09-02 - 11-33-54-RNA_sampleTable.csv*
+3. Samples selected for FACS - *Filename = 30samplesReFACS.csv*
 
 ```{r}
 # Input files 
-# 1. Phenotype_All information of core 96 samples 
+# 1. Phenotype_All information of core 96 samples (96_samples_all_v2.xlsx) 
 # 2. RIN_All from RNA extracted by G.Wheildon of core 96 samples
-# 3. Phenotype information for tab 133 samples
-input_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Samples/"
-Phenotype_All <-read.csv(paste0(input_dir,"96_samples.csv"))[-1]
+input_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Samples/" #first tab of 96_samples_all_v2.xlsx
+Phenotype_All <-read.csv(paste0(input_dir,"96_samples_all_v2_singletab.csv"))[-1]
 RIN_All <- read.table(paste0(input_dir,"BDR_96_RNA_QC_2020-09-02 - 11-33-54-RNA_sampleTable.csv"), as.is = T, sep = ",") %>% row_to_names(row_number = 1)
-Phenotype_133_All <- read.csv(paste0(input_dir,"133_samples.csv"))[-1]
+FACS_All <- read.table(paste0(input_dir,"FACS.csv"), as.is = T, sep = ",") %>% row_to_names(row_number = 1)  %>% mutate(FACS = "FACS_Yes")
 
 # Data Wrangle QC
 # Gender, ensure F = Female, M = Male for all values
@@ -69,19 +74,19 @@ Phenotype_All$Braak.Stage_numeric <- lapply(Phenotype_All$Braak.Stage, function(
 
 ### Phenotype: 96 Samples
 ```{r}
-# Output Datatables 
 datatable(Phenotype_All, caption = "Latest Phenotype data of 96 samples",options = list(pageLength = 5, scrollX = TRUE))
-```
-
-### Phenotype: 133 Samples
-```{r}
-datatable(Phenotype_133_All, caption = "Latest Phenotype data of 133 samples",options = list(pageLength = 5, scrollX = TRUE))
 ```
 
 ### Phenotype: RIN
 ```{r}
 datatable(RIN_All, caption = "RIN Values from G.Wheildon",options = list(pageLength = 5, scrollX = TRUE))
 ```
+
+### FACS: 32 samples
+```{r}
+datatable(FACS_All, caption = "FACS selected samples from J.Davies",options = list(pageLength = 5, scrollX = TRUE))
+```
+
 ## QC 
 Checking to make sure data in columns (with similar names) in phenotype data match
 
@@ -98,50 +103,54 @@ Columns: Gender vs Sex.x: `r all(Phenotype_All$Gender == Phenotype_All$Sex.x)`
 #### Braak Stage
 Columns: BraakTangle_numeric vs Braak_tangle: `r all(Phenotype_All$BraakTangle_numeric == Phenotype_All$Braak_tangle)`  
 All the rows except for one sample (BBN_id: BBN_9944) match in Braak Stages:  
-- BraakTangle_Numeric for sample = `r setdiff(Phenotype_All$BraakTangle_numeric,Phenotype_All$Braak_tangle)`  
 - BraakTangle for sample = `r setdiff(Phenotype_All$Braak_tangle, Phenotype_All$BraakTangle_numeric)`  
 
 # Merge samples by phenotype data and RIN
 
-Samples in Phenotype data and RIN values are merged by Sample ID (concatenation of BBN.ID and Brain.ID).  
-**Note: Discrepancy between sample ID, with some samples have no RIN values and others with no corresponding phenotypic data. Thus, 117 entries rather than 96 in Final Table. Some of the samples match with those in Phenotype file for 133 samples**
+## Phenotype and RIN Values
+Samples in Phenotype data, RIN data, and FACs data are merged by Sample ID (concatenation of BBN.ID and Brain.ID).  
 
 ```{r}
 # Simpify and Merge Phenotype and RIN dataframes
 Phenotype <- Phenotype_All %>% mutate(ID = paste0(BBN.ID,";",Brain.ID)) %>% select(ID, Institute, BraakTangle_numeric, Age.x, Sex.x, Plate, APOE_geno, PMI)
-Phenotype_133 <- Phenotype_133_All %>% mutate(ID = paste0(BBN.ID,";",Brain.ID)) %>% 
-  select(ID, Institute, BraakTangle_numeric, Age.x, Sex.x, Plate, APOE_geno, PMI)
 RIN <- RIN_All %>% mutate(ID = paste0(BBN.ID,";",Brain.ID)) %>% select(ID,RINe,conc)
+FACS <- FACS_All %>% 
+  # ensure brain_id and centre_id match that in phenotype by ensuring same non-character strings
+  mutate(ID = paste0(BBN_ID,";",Centre_ID)) %>% mutate(ID = str_remove(ID, "-1")) %>%
+  select(ID, FACS)
 
 # merge by ID (concatenation of BBN.ID and Brain.ID)
 Final <- merge(Phenotype, RIN, by = "ID", all = T)
-Final_133 <- merge(Phenotype_133, RIN, by = "ID", all = T)
 
-# discrepancy between samples from phenotype and RIN values 
-Final$QC <- apply(Final, 1, function(x) 
+# check samples from phenotype and RIN values match
+Final$RNAPhenotype <- apply(Final, 1, function(x) 
   if(!is.na(x[["Institute"]]) & !is.na(x[["RINe"]])){"Match"
   } else if (!is.na(x[["Institute"]]) & is.na(x[["RINe"]])){"No_RIN_value"
   } else if (is.na(x[["Institute"]]) & !is.na(x[["RINe"]])){"No_Phenotype_Data"})
 
-Final %>% group_by(QC) %>% tally()
+# list samples selected for FACS sorting
+Final$FACS <- apply(Final, 1, function(x) ifelse(x[["ID"]] %in% FACS$ID, "FACS_Yes", "FACS_No"))
+
+Final %>% group_by(RNAPhenotype, FACS) %>% tally()
 
 datatable(Final, caption = "Merged dataframe of phenotype data and RIN scores by Sample ID",options = list(pageLength = 5, scrollX = TRUE))
 ```
 
+- `r nrow(FACS_All)` samples in FACs data (selected by J.Davies) are in the core 96 of those with RNA extraction  = `r nrow(Final[Final$FACS == "FACS_Yes",]) == nrow(FACS_All) `
+
 # All samples 
 
-*Only taking those samples matching with phenotype data and RIN values* 
+## {.tabset .tabset-pills}
 
-## Age and Braak Stages 
+### Age and Braak Stages 
 
 Good range of age across Braak Stages. Of note:  
 - Only 5 samples in Braak Stage 0, with clear distinction between Sex and Age  
-- Braak Stage 6 slightly older than Braak stage 0  
-- Only `r nrow(Final %>% filter(QC == "Match" &BraakTangle_numeric == "6"))`, despite `r nrow(Final %>% filter(BraakTangle_numeric == "6"))` samples in core 96 phenotypic data  
+- Unsurprisingly, many more Braak Stage 6 than Braak Stage 0 and also slightly older
 
 ```{r}
 # age distribution
-Final %>% filter(QC == "Match") %>% 
+Final %>% 
   ggplot(., aes(x = as.factor(BraakTangle_numeric), y = as.numeric(Age.x))) + geom_point(aes(colour = Sex.x)) + 
   theme_classic() + 
   labs(x = "Braak Stages", y = "Age") + 
@@ -149,7 +158,7 @@ Final %>% filter(QC == "Match") %>%
 
 ```
 
-## RIN and Braak Stages 
+### RIN and Braak Stages 
 
 Similar range of RINs across Braak Stages. 
 - Use all 5 samples for Braak Stage 0 moving forward for Iso-Seq 
@@ -157,7 +166,7 @@ Similar range of RINs across Braak Stages.
 
 ```{r}
 ### RIN and Braakstages
-Final %>% filter(QC == "Match") %>% 
+Final %>% 
   ggplot(., aes(x = as.factor(BraakTangle_numeric), y = as.numeric(RINe))) + geom_point(aes(colour = Sex.x)) + 
   theme_classic() + 
   labs(x = "Braak Stages", y = "RIN") + 
@@ -166,11 +175,13 @@ Final %>% filter(QC == "Match") %>%
 
 # Extreme Samples: Braak Stage 0 and 6
 
-## RIN and Concentration
+## {.tabset .tabset-pills}
+
+### RIN and Concentration
 As expected, positive correlation of RIN to concentration for samples. Most samples with concentration > 100ng/uL (used in Mouse Targeted Iso-Seq prep)
 
 ```{r}
-Final %>% filter(QC == "Match") %>% 
+Final %>% 
   filter(BraakTangle_numeric %in% c("0","6")) %>%
   ggplot(., aes(x = as.numeric(conc), y = as.numeric(RINe), colour = as.factor(BraakTangle_numeric), shape = Institute)) + geom_point(size = 3) +
   theme_classic() + 
@@ -178,17 +189,130 @@ Final %>% filter(QC == "Match") %>%
   scale_colour_manual(name = "Braak Stages", labels = c("0", "6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2]))
 ```
 
-## APOE genotype 
+### APOE genotype 
 Mix of APOE genotype across Braak Stage 0 and 6. Note an "NA" value for one of the samples
 
 ```{r}
 # APOE genotype
-Final %>% filter(QC == "Match") %>% 
+Final %>% 
   filter(BraakTangle_numeric %in% c("0","6")) %>% 
   ggplot(., aes(x = APOE_geno, y = RINe,colour = as.factor(BraakTangle_numeric))) + geom_point(size = 3) + 
   theme_classic() + 
   labs(y = "RIN", x = "APOE Genotype") +
   scale_colour_manual(name = "Braak Stages", labels = c("0", "6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2]))
+```
+
+### FACS 
+Some of the high RIN AD samples were not selected for FACS...
+
+
+```{r}
+
+Final %>% 
+  filter(BraakTangle_numeric %in% c("0","6")) %>% 
+  ggplot(., aes(x = as.factor(BraakTangle_numeric), y = RINe, colour = FACS)) + geom_point(size = 3) +
+  theme_classic() + 
+  labs(y = "RIN", x = "Braak Stages") +
+  scale_colour_manual(name = "FACS Selected", labels = c("No", "Yes"), values = c(wes_palette("Darjeeling1")[1], wes_palette("Darjeeling1")[2]))
+
+```
+
+### PMI
+During upgrade, Lorna mentioned the importance of short PMI to avoid changes to splicing and gene expression ([Ferriera et al (2018)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5811508/#!po=8.33333)). 
+
+
+As expected, higher RIN values correlated with lower PMI. All Braak Stage 6 samples (considered top 5 with highest RIN scores, threshold denoted with a dashed line, would have PMI < 50 hours - shaded green) bar 1 (shaded red). 3 out of 5 samples of Control have short PMI (shaded blue).  
+**For AD samples, PMI vs RIN? Better to pick more closely matched PMI between AD samples and Control?**
+```{r}
+
+Final %>% 
+  filter(BraakTangle_numeric %in% c("0","6")) %>%
+  ggplot(., aes(x = as.numeric(PMI), y = as.numeric(RINe), colour = as.factor(BraakTangle_numeric), shape = Institute)) + geom_point(size = 3) +
+  theme_classic() + 
+  labs(y = "RIN", x = "PMI (hours)") + 
+  scale_colour_manual(name = "Braak Stages", labels = c("0", "6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2])) +
+  geom_hline(yintercept=6, linetype="dashed", color = "green", size=0.2) +
+  annotate("rect", xmin = 0, xmax = 50, ymin = 6.2, ymax = 8.5, alpha = .1,fill = "green") + 
+  annotate("rect", xmin = 5, xmax = 25, ymin = 3.8, ymax = 6.5, alpha = .1,fill = "blue") +
+  annotate("rect", xmin = 92, xmax = 100, ymin = 6, ymax = 6.4, alpha = .1,fill = "red") 
+
+
+```
+
+
+### Age
+
+The higher RIN AD samples (demaracated by the threshold RIN at 6) are older than the Control samples (shaded in blue). There are some matched AD samples (shaded in blue) but RIN is significantly lower
+
+```{r}
+Final %>% 
+  filter(BraakTangle_numeric %in% c("0","6")) %>%
+  ggplot(., aes(x = as.numeric(Age.x), y = as.numeric(RINe), colour = as.factor(BraakTangle_numeric))) + geom_point(size = 3) +
+  theme_classic() + 
+  labs(y = "RIN", x = "Age (years)") + 
+  scale_colour_manual(name = "Braak Stages", labels = c("0", "6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2])) +
+  geom_hline(yintercept=6, linetype="dashed", color = "green", size=0.2) +
+  annotate("rect", xmin = 60, xmax = 78, ymin = 3.5, ymax = 6.0, alpha = .1,fill = "blue")
+
+```
+
+# Samples for Targeted Iso-Seq 
+There are:  
+- Braak Stage 0 = `r nrow(Final[Final$BraakTangle_numeric == "0",])` samples  
+- Braak Stage 6 = `r nrow(Final[Final$BraakTangle_numeric == "6",])` samples  
+
+1st run - All 5 Braak Stage 0 samples and 5 Braak Stage 6 samples (need to order 10th Pacbio barcoding sequence, only 9 currently in lab)  
+- Braak Stage 6 samples ranked by highest RIN Score and thus the highest concentration first 
+
+## {.tabset .tabset-pills}
+
+### All 0 and 6 Samples
+```{r}
+Final %>% 
+  filter(BraakTangle_numeric %in% c("0","6")) %>% 
+  datatable(., caption = "All Braak Stage 0 and 6",options = list(pageLength = 5, scrollX = TRUE)) %>% 
+  formatStyle('BraakTangle_numeric',  backgroundColor = styleEqual(c(0, 6), c(wes_palette("Royal1")[1], wes_palette("Royal1")[2])))
+```
+
+
+### Selected Samples 
+
+= Lowest RIN score for AD = 5.4; Lowest RIN score for Control = 3.9
+- Only 5 controls to choose from, alos note lowest RIN score has no APOE genotype
+
+```{r}
+
+# filter by Braak Stage 6 and order by RIN score
+BS_0 <- Final %>% filter(BraakTangle_numeric == "0") 
+BS_6 <- Final %>% filter(BraakTangle_numeric == "6") %>% filter(rank(desc(as.numeric(RINe))) <= 5)
+
+Selected <- bind_rows(BS_0, BS_6)
+
+datatable(Selected, caption = "All Braak Stage 0 and 6",options = list(pageLength = 5, scrollX = TRUE)) %>% 
+  formatStyle('BraakTangle_numeric',  backgroundColor = styleEqual(c(0, 6), c(wes_palette("Royal1")[1], wes_palette("Royal1")[2])))
+
+write.csv(Selected, paste0(input_dir,"Selected_BDR.csv"))
+```
+
+### Age
+
+Not completely matched between Control and AD but within the same range
+```{r}
+ggplot(Selected, aes(x = as.factor(BraakTangle_numeric), y = as.numeric(Age.x))) + geom_jitter(aes(colour = Sex.x),width = 0.15) + 
+  theme_classic() + 
+  labs(x = "Braak Stages", y = "Age (years)") + 
+  scale_colour_discrete(name = "Sex", labels = c("Female", "Male"))
+
+```
+
+### PMI
+One AD sample with very high PMI 
+```{r}
+ggplot(Selected, aes(x = as.factor(BraakTangle_numeric), y = as.numeric(PMI))) + geom_point(aes(colour = Sex.x)) + 
+theme_classic() + 
+labs(x = "Braak Stages", y = "Age") + 
+scale_colour_discrete(name = "Sex", labels = c("Female", "Male"))
+
 ```
 
 
