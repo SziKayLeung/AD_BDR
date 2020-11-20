@@ -28,12 +28,15 @@ suppressMessages(library("DT"))
 suppressMessages(library("ggplot2")) 
 suppressMessages(library("wesanderson")) # colours 
 suppressMessages(library("stringr")) # str_replace 
+suppressMessages(library("ggrepel")) # geom_text_repel
+suppressMessages(library("gridExtra")) #grid_arrange
+suppressMessages(library("grid")) #grid_arrange
 
 source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/ad_bdr/Rmarkdown_Input.R")
 ```
 # Aim
 
-**To choose BDR Samples for Targeted Iso-Seq by**    
+**To choose 30 BDR Samples for Targeted Iso-Seq by**    
 - Braak-Stage, starting off first with 0 and 6  
 - RINscore and concentration
 
@@ -161,7 +164,8 @@ Final %>%
 ### RIN and Braak Stages 
 
 Similar range of RINs across Braak Stages. 
-- Use all 5 samples for Braak Stage 0 moving forward for Iso-Seq 
+- Use all 5 samples for Braak Stage 0 moving forward for Iso-Seq, and the top 11 samples from Braak Stage 1 (i.e. highest RIN)
+- Use 16 samples from Braak Stage 6 (threshold at RIN 4)
 
 
 ```{r}
@@ -182,11 +186,11 @@ As expected, positive correlation of RIN to concentration for samples. Most samp
 
 ```{r}
 Final %>% 
-  filter(BraakTangle_numeric %in% c("0","6")) %>%
+  filter(BraakTangle_numeric %in% c("0","1","6")) %>%
   ggplot(., aes(x = as.numeric(conc), y = as.numeric(RINe), colour = as.factor(BraakTangle_numeric), shape = Institute)) + geom_point(size = 3) +
   theme_classic() + 
   labs(y = "RIN", x = "Concentration (ng/uL)") + 
-  scale_colour_manual(name = "Braak Stages", labels = c("0", "6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2]))
+  scale_colour_manual(name = "Braak Stages", labels = c("0", "6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2], wes_palette("Royal1")[3]))
 ```
 
 ### APOE genotype 
@@ -203,13 +207,13 @@ Final %>%
 ```
 
 ### FACS 
-Some of the high RIN AD samples were not selected for FACS...
+Note: Some of the high RIN AD samples were not selected for FACS. However, not planning on integrating FACS with transcriptomics
 
 
 ```{r}
 
 Final %>% 
-  filter(BraakTangle_numeric %in% c("0","6")) %>% 
+  filter(BraakTangle_numeric %in% c("0","1","6")) %>% 
   ggplot(., aes(x = as.factor(BraakTangle_numeric), y = RINe, colour = FACS)) + geom_point(size = 3) +
   theme_classic() + 
   labs(y = "RIN", x = "Braak Stages") +
@@ -221,20 +225,16 @@ Final %>%
 During upgrade, Lorna mentioned the importance of short PMI to avoid changes to splicing and gene expression ([Ferriera et al (2018)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5811508/#!po=8.33333)). 
 
 
-As expected, higher RIN values correlated with lower PMI. All Braak Stage 6 samples (considered top 5 with highest RIN scores, threshold denoted with a dashed line, would have PMI < 50 hours - shaded green) bar 1 (shaded red). 3 out of 5 samples of Control have short PMI (shaded blue).  
-**For AD samples, PMI vs RIN? Better to pick more closely matched PMI between AD samples and Control?**
+As expected, higher RIN values correlated with lower PMI. However, not the way PMI is measured varies between institutes and conditions, thus not a primary factor to consider when determining samples to be selected
 ```{r}
 
 Final %>% 
-  filter(BraakTangle_numeric %in% c("0","6")) %>%
+  filter(BraakTangle_numeric %in% c("0","1","6")) %>%
   ggplot(., aes(x = as.numeric(PMI), y = as.numeric(RINe), colour = as.factor(BraakTangle_numeric), shape = Institute)) + geom_point(size = 3) +
   theme_classic() + 
   labs(y = "RIN", x = "PMI (hours)") + 
-  scale_colour_manual(name = "Braak Stages", labels = c("0", "6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2])) +
-  geom_hline(yintercept=6, linetype="dashed", color = "green", size=0.2) +
-  annotate("rect", xmin = 0, xmax = 50, ymin = 6.2, ymax = 8.5, alpha = .1,fill = "green") + 
-  annotate("rect", xmin = 5, xmax = 25, ymin = 3.8, ymax = 6.5, alpha = .1,fill = "blue") +
-  annotate("rect", xmin = 92, xmax = 100, ymin = 6, ymax = 6.4, alpha = .1,fill = "red") 
+  scale_colour_manual(name = "Braak Stages", labels = c("0","1","6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[4],wes_palette("Royal1")[2])) +
+  geom_hline(yintercept=6, linetype="dashed", color = "green", size=0.2) 
 
 
 ```
@@ -246,11 +246,11 @@ The higher RIN AD samples (demaracated by the threshold RIN at 6) are older than
 
 ```{r}
 Final %>% 
-  filter(BraakTangle_numeric %in% c("0","6")) %>%
+  filter(BraakTangle_numeric %in% c("0","1","6")) %>%
   ggplot(., aes(x = as.numeric(Age.x), y = as.numeric(RINe), colour = as.factor(BraakTangle_numeric))) + geom_point(size = 3) +
   theme_classic() + 
   labs(y = "RIN", x = "Age (years)") + 
-  scale_colour_manual(name = "Braak Stages", labels = c("0", "6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2])) +
+  scale_colour_manual(name = "Braak Stages", labels = c("0","1","6"), values = c(wes_palette("Royal1")[1], wes_palette("Royal1")[2],wes_palette("Royal1")[4])) +
   geom_hline(yintercept=6, linetype="dashed", color = "green", size=0.2) +
   annotate("rect", xmin = 60, xmax = 78, ymin = 3.5, ymax = 6.0, alpha = .1,fill = "blue")
 
@@ -259,39 +259,56 @@ Final %>%
 # Samples for Targeted Iso-Seq 
 There are:  
 - Braak Stage 0 = `r nrow(Final[Final$BraakTangle_numeric == "0",])` samples  
+- Braak Stage 1 = `r nrow(Final[Final$BraakTangle_numeric == "1",])` samples 
 - Braak Stage 6 = `r nrow(Final[Final$BraakTangle_numeric == "6",])` samples  
-
-1st run - All 5 Braak Stage 0 samples and 5 Braak Stage 6 samples (need to order 10th Pacbio barcoding sequence, only 9 currently in lab)  
-- Braak Stage 6 samples ranked by highest RIN Score and thus the highest concentration first 
 
 ## {.tabset .tabset-pills}
 
-### All 0 and 6 Samples
+### All BraakStage 0, 1, 6 Samples
 ```{r}
 Final %>% 
-  filter(BraakTangle_numeric %in% c("0","6")) %>% 
-  datatable(., caption = "All Braak Stage 0 and 6",options = list(pageLength = 5, scrollX = TRUE)) %>% 
-  formatStyle('BraakTangle_numeric',  backgroundColor = styleEqual(c(0, 6), c(wes_palette("Royal1")[1], wes_palette("Royal1")[2])))
+  filter(BraakTangle_numeric %in% c("0","1","6")) %>% 
+  datatable(., caption = "All Braak Stage 0, 1 and 6,",options = list(pageLength = 5, scrollX = TRUE)) %>% 
+  formatStyle('BraakTangle_numeric',  backgroundColor = styleEqual(c(0, 1, 6), c(wes_palette("Royal1")[1], wes_palette("Royal1")[4],wes_palette("Royal1")[2])))
 ```
 
 
 ### Selected Samples 
+
+Total Samples: 30 samples (Braak Stage 0 + 1 = 15 samples, Braak Stage 6 = 15 samples)
+- All of Braak Stage 0 (n = 5 samples)
+- 10 of Braak Stage 1 ranked by highest RIN Score 
+- 15 of Brakk Stage 6 ranked by highest RIN score
+
+1st run - All 5 Braak Stage 0 samples and 5 Braak Stage 6 samples (need to order 10th Pacbio barcoding sequence, only 9 currently in lab)  
+- Braak Stage 6 samples ranked by highest RIN Score and thus the highest concentration first 
+
 
 = Lowest RIN score for AD = 5.4; Lowest RIN score for Control = 3.9
 - Only 5 controls to choose from, alos note lowest RIN score has no APOE genotype
 
 ```{r}
 
-# filter by Braak Stage 6 and order by RIN score
+# filter by Braak Stage 1, 6 and order by RIN score, the top 10 and 15 respectively
 BS_0 <- Final %>% filter(BraakTangle_numeric == "0") 
-BS_6 <- Final %>% filter(BraakTangle_numeric == "6") %>% filter(rank(desc(as.numeric(RINe))) <= 5)
+BS_1 <- Final %>% filter(BraakTangle_numeric == "1") %>% filter(rank(desc(as.numeric(RINe))) <= 10) 
+BS_6 <- Final %>% filter(BraakTangle_numeric == "6") %>% filter(rank(desc(as.numeric(RINe))) <= 15)
 
-Selected <- bind_rows(BS_0, BS_6)
+# All_Samples
+Selected <- bind_rows(BS_0, BS_1, BS_6) 
 
-datatable(Selected, caption = "All Braak Stage 0 and 6",options = list(pageLength = 5, scrollX = TRUE)) %>% 
-  formatStyle('BraakTangle_numeric',  backgroundColor = styleEqual(c(0, 6), c(wes_palette("Royal1")[1], wes_palette("Royal1")[2])))
+datatable(Selected, caption = "All Braak Stage 0 and 6, Partial Braak Stage 1",options = list(pageLength = 5, scrollX = TRUE)) %>% 
+  formatStyle('BraakTangle_numeric',  backgroundColor = styleEqual(c(0,1,6), c(wes_palette("Royal1")[1], wes_palette("Royal1")[4], wes_palette("Royal1")[2])))
 
-write.csv(Selected, paste0(input_dir,"Selected_BDR.csv"))
+```
+
+### RIN
+```{r}
+ggplot(Selected, aes(x = as.factor(BraakTangle_numeric), y = as.numeric(RINe))) + geom_point(aes(colour = Sex.x)) + 
+  theme_classic() + 
+  labs(x = "Braak Stages", y = "RIN") + 
+  scale_colour_discrete(name = "Sex", labels = c("Female", "Male"))
+
 ```
 
 ### Age
@@ -312,7 +329,61 @@ ggplot(Selected, aes(x = as.factor(BraakTangle_numeric), y = as.numeric(PMI))) +
 theme_classic() + 
 labs(x = "Braak Stages", y = "Age") + 
 scale_colour_discrete(name = "Sex", labels = c("Female", "Male"))
-
 ```
+
+# Running in batches
+
+## {.tabset .tabset-pills}
+
+### Batch 1, 2, 3
+
+```{r}
+
+# 3 Batches in order of RIN scores (allow easier downstream Iso-Seq lab for amplification etc)
+Batched <- bind_rows(arrange(Selected,desc(RINe)) %>% .[1:10,] %>% mutate(Batch = "1"),
+          arrange(Selected,desc(RINe)) %>% .[11:20,] %>% mutate(Batch = "2"),
+          arrange(Selected,desc(RINe)) %>% .[21:30,] %>% mutate(Batch = "3"))
+
+# Manual Randomisation
+Batched[Batched$ID == "BBN_18399;A053/11", "Batch"] <- "3"
+Batched[Batched$ID == "BBN002.30920;A435/17", "Batch"] <- "2"
+
+plot_batches <- function(batch_num){
+  p <- Batched %>% filter(Batch == batch_num) %>% 
+    ggplot(., aes(x = as.factor(BraakTangle_numeric), y = as.numeric(RINe), label = Plate, shape = Institute)) + 
+    geom_jitter(aes(colour = Sex.x),width = 0.15, size = 2) + 
+    theme_classic() + 
+    labs(x = "Braak Stages", y = "RIN", subtitle = paste("Samples in Batch",batch_num)) + 
+    scale_colour_discrete(name = "Sex", labels = c("Female", "Male")) + 
+    #geom_text_repel(size = 3) + 
+    ylim(3,8)
+  
+  return(p)
+}
+
+get_legend<-function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+
+
+
+# Significance across batches 
+summary(aov(RINe ~ Batch, data = Batched))  # Statistically significant between Batches and RINe
+summary(aov(RINe ~ Institute, data = Batched)) # Not signficant between RINe and Institute
+summary(aov(Batch ~ Institute, data = Batched))# Nor signficant between Batch and Institute
+write.csv(Batched, paste0(input_dir,"Selected_BDR.csv"))
+
+legend <- get_legend(plot_batches("1"))
+pdf(paste0(input_dir,"Selected_BDR_Batches.pdf"))
+grid.arrange(plot_batches("1") + theme(legend.position="none"), 
+             plot_batches("2") + theme(legend.position="none"), 
+             plot_batches("3") + theme(legend.position="none"),
+             legend, ncol=2)
+dev.off()
+
+
 
 
