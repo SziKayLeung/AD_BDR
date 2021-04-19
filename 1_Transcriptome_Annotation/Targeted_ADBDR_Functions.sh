@@ -431,6 +431,11 @@ run_sqanti2(){
     elif [ $8 == "genome" ]; then
       echo "Processing with gencode.vM22.annotation.gtf for genome annotation "
       python $SQANTI2_DIR/sqanti_qc2.py -t 30 --gtf $3/$2 $REFERENCE/gencode.vM22.annotation.gtf $REFERENCE/mm10.fa --cage_peak $CAGE_DIR/mm10.cage_peak_phase1and2combined_coord.bed --coverage "./*SJ.out.bed" --polyA_motif_list $SQANTI2_DIR/../human.polyA.list.txt --expression $5 --fl_count $6 &> $1.sqanti.qc.log
+
+    elif [ $8 == "basic" ]; then
+      echo "Processing with lncRNA.gtf for genome annotation "
+      python $SQANTI2_DIR/sqanti_qc2.py -t 30 --gtf $3/$2 $REFERENCE/gencode.vM22.annotation.gtf $REFERENCE/mm10.fa --cage_peak $CAGE_DIR/mm10.cage_peak_phase1and2combined_coord.bed --polyA_motif_list $SQANTI2_DIR/../human.polyA.list.txt --fl_count $6 &> $1.sqanti.qc.log
+
     else
       echo "8th argument required"
     fi
