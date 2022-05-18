@@ -8,33 +8,32 @@
 #SBATCH --ntasks-per-node=16 # specify number of processors per node
 #SBATCH --mail-type=END # send email at job completion
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
-#SBATCH --reservation=research_project-mrc148213_5
-#SBATCH --array=0 # 1 sample
-#SBATCH --output=Targeted_ADBDR_Part1.o
-#SBATCH --error=Targeted_ADBDR_Part1.e
+#SBATCH --array=0-2 # 3 samples
+#SBATCH --output=Targeted_ADBDR_Part1-%A_%a.o
+#SBATCH --error=Targeted_ADBDR_Part1-%A_%a.e
 
-# 18/04/2021: Batch 1
+# 08/05/2021: Batch 1,2,3
 
 #************************************* DEFINE GLOBAL VARIABLES
 # File directories
-cd /gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR; mkdir IsoSeq Post_IsoSeq RNASeq
+#cd /gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR; mkdir IsoSeq Post_IsoSeq RNASeq
 Isoseq3_WKD=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/IsoSeq
 PostIsoseq3_WKD=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq
 RNASeq_WKD=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/RNASeq
 
-cd $Isoseq3_WKD; mkdir CCS LIMA REFINE CLUSTER
-cd $Isoseq3_WKD/LIMA; mkdir BATCHES
-cd $Isoseq3_WKD/REFINE; mkdir BATCHES
-cd $Isoseq3_WKD/CLUSTER; mkdir BATCHES
-cd $PostIsoseq3_WKD; mkdir mkdir MAP TOFU SQANTI2 KALLISTO TAMA SQANTI_TAMA_FILTER
-cd $RNASeq_WKD; mkdir MAPPED
+#cd $Isoseq3_WKD; mkdir CCS LIMA REFINE CLUSTER
+#cd $Isoseq3_WKD/LIMA; mkdir BATCHES
+#cd $Isoseq3_WKD/REFINE; mkdir BATCHES
+#cd $Isoseq3_WKD/CLUSTER; mkdir BATCHES
+#cd $PostIsoseq3_WKD; mkdir mkdir MAP TOFU SQANTI2 KALLISTO TAMA SQANTI_TAMA_FILTER
+#cd $RNASeq_WKD; mkdir MAPPED
 
 # For Pooled Targeted
 ### Important order of BAM files is the same as the sample names
-BATCH_NAMES=(Targeted_Seq_1)
-FUNCTIONS=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/ad_bdr/1_Transcriptome_Annotation
-cat $FUNCTIONS/Isoseq_Targeted_ADBDR_Raw.txt
-BAM_FILES=(`cat $FUNCTIONS/Isoseq_Targeted_ADBDR_Raw.txt | egrep -v "^\s*(#|$)"`)
+BATCH_NAMES=(Targeted_Seq_1 Targeted_Seq_2 Targeted_Seq_3)
+RAWDATA=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/Raw_Data
+cat $RAWDATA/Isoseq_Targeted_ADBDR_Raw.txt
+BAM_FILES=(`cat $RAWDATA/Isoseq_Targeted_ADBDR_Raw.txt | egrep -v "^\s*(#|$)"`)
 
 # Other input files and directory
 REFERENCE=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019
@@ -55,5 +54,5 @@ BAM_FILE=${BAM_FILES[${SLURM_ARRAY_TASK_ID}]}
 run_CCS ${BAM_FILE} ${BATCH} $Isoseq3_WKD/CCS
 run_LIMA ${BATCH} $Isoseq3_WKD/CCS $Isoseq3_WKD/LIMA "multiplex"
 run_LIMA ${BATCH} $Isoseq3_WKD/CCS $Isoseq3_WKD/LIMA/BATCHES "no_multiplex"
-run_REFINE ${BATCH} $Isoseq3_WKD/LIMA $Isoseq3_WKD/REFINE/BATCHES
+run_REFINE ${BATCH} $Isoseq3_WKD/LIMA/BATCHES $Isoseq3_WKD/REFINE/BATCHES
 run_CLUSTER ${BATCH} $Isoseq3_WKD/REFINE/BATCHES $Isoseq3_WKD/CLUSTER/BATCHES
