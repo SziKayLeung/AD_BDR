@@ -1,0 +1,119 @@
+---
+title: "BDR samples"
+author: "Szi Kay Leung"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# libraries
+suppressMessages(library("dplyr"))
+suppressMessages(library("stringr"))
+
+```
+
+Aim: Checking samples from BDR in the 96 cohort match with the raw filtered RNA-Seq data to ensure consistency for downstream expression files
+
+```{r files}
+RNASeq_filtered_dir="/lustre/projects/Research_Project-193356/Project_10202/11_fastp_trimmed"
+RIN_file="/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/0_metadata/0_lab/RIN.csv"
+```
+
+## Files 
+Input RNA-Seq directory containing trimmed files:```r RNASeq_filtered_dir```
+<br><br>
+Input RNA-Seq RIN file containing list of 96 samples:```r RIN_file```
+
+```{r read_in_files}
+
+# read in files 
+files <- list.files(path=RNASeq_filtered_dir,pattern="R1")
+RIN <- read.csv(RIN_file)
+
+# extract the BBN.ID from both files 
+# replace "." in the BBN.ID column with "_" to match the filenames in RNASeq_filtered_dir 
+RIN <- RIN %>% mutate(BBN.ID.file = gsub('\\.', '_', BBN.ID))
+
+# remove ladder entry 
+RIN <- RIN %>% filter(Sample.Description != "Ladder")
+
+# extract the second and first part of the filenames in RNASeq_filtered_dir which corresponds to BBN.ID
+BBN <- unlist(lapply(files, 
+                     function(x) paste0(word(x, c(2), sep = fixed("_")), "_",
+                                        word(x, c(3), sep = fixed("_")))))
+
+```
+
+## Match BBN.ID
+Extract BBN.ID in filenames in ```r RNASeq_filtered_dir```;\ 
+i.e from ```r files[82]``` to ```r BBN[82]```
+<br><br>
+Extract BBN.ID in ```r RIN_file```, replacing "." with "_" to match filenmaes;\
+i.e. from ```r RIN$BBN.ID[3]` to `r RIN$BBN.ID.file[3]```\
+
+<br><br>
+
+## Check for differences 
+
+Files that are present in RIN file (96 cohort), but not as a file in the RNA-Seq filtered directory
+```{r diff1}
+setdiff(RIN$BBN.ID.file, BBN)              
+```
+
+<br>
+Files that are present in the filtered directory, but not in the RIN file
+```{r diff2}
+setdiff(BBN,RIN$BBN.ID.file)
+```
+
+<br><br>
+
+## Differential Analysis 
+
+```{r}
+missingsamples <- setdiff(RIN$BBN.ID.file, BBN) 
+
+# input files
+tappas_phenotype_file <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/0_metadata/A_IsoSeq/Tappas/ADBDR_AllRNASeqPhenotypeTAPPAS.txt"
+tappas_expression_file <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Differential/B_Hybrid_96/AllBDRTargeted_RNASeq.expression.txt"
+
+# read files
+original_phenotype <- read.table(tappas_phenotype_file, header = T)
+phenotype <-original_phenotype %>% filter(!sample %in% missingsamples)
+expression <- read.table(tappas_expression_file)
+
+# output directories
+TAPPAS_PHENO_DIR <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/0_metadata/A_IsoSeq/Tappas"
+HYBRID_DIFF_DIR <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Differential/B_Hybrid_96"
+
+# write output
+extreme_phenotype <- phenotype %>% filter(group != "intermediate")
+write.table(extreme_phenotype, paste0(TAPPAS_PHENO_DIR,"/ADBDR_MinusIntermediate_RNASeqPhenotypeTAPPAS.txt"), quote = F, sep = "\t", row.names = F)
+write.table(expression, paste0(HYBRID_DIFF_DIR ,"/AllBDRTargeted_RNASeq_Final.expression.txt"), quote = F, sep = "\t")
+```
+
+
+1) Modify the tappAS phenotype file to only include the samples that were available as RNA-Seq filtered fasta files, thereby removing the `r setdiff(RIN$BBN.ID.file, BBN)` sample names from the original phenotype file\
+Output: ```r  paste0(HYBRID_DIFF_DIR,"/AllBDRTargeted_RNASeq_Final.expression.txt")```
+<br>
+
+2) Generate a tappAS phenotype file to only include the extreme samples (AD, control) and not the intermediate samples (Braak 3,4), given only interested in the extreme ends\
+Output: ```r  paste0(TAPPAS_PHENO_DIR,"/ADBDR_MinusIntermediate_RNASeqPhenotypeTAPPAS.txt")```
+
+<br><br>
+***Note***\
+Total number of samples in cohort: `r nrow(original_phenotype)`\
+Total number of samples detected with RNA-Seq data: `r nrow(phenotype)`\
+by phenotype: 
+```{r}
+table(phenotype$group)
+```
+Total number of samples used for differential expression analysis, removing intermediate samples: `r nrow(extreme_phenotype)`
+
