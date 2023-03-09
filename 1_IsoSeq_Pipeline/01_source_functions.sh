@@ -31,16 +31,8 @@ lima --version #lima 2.0.0 (commit v2.0.0)
 isoseq3 --version #isoseq3 3.4.0 (commit v3.4.0)
 
 source activate sqanti2_py3
-samtools --version # echo version
 echo "Minimap2 version:" $(minimap2 --version) # echo version
-echo "ToFU Cupcake Version"
-head $CUPCAKE/README.md
 
-echo "FASTA SEQUENCE (CLONTECH PRIMERS) FOR NON-MULTIPLEXING"
-cat $FASTA
-
-echo "FASTA SEQUENCE (BARCODED PRIMERS) FOR MULIPLEXING IN TARGETED SEQUENCING"
-cat $TARGETED_FASTA
 
 ################################################################################################
 #*************************************  Isoseq3 [Function 1,2,3,4,5,6]
@@ -357,7 +349,7 @@ rnaseq_merge_fastq(){
     echo "Processing R2 READS"
     echo $R2_READS_MERGE
 
-    mkdir -p $WKD_ROOT/8_kallisto; cd $WKD_ROOT/8_kallisto
+    cd $RNASEQ_MAPPED_DIR
     zcat $R1_READS_MERGE > $1"_R1.fq"
     zcat $R2_READS_MERGE > $1"_R2.fq"
 }
@@ -374,10 +366,10 @@ run_kallisto(){
     source activate sqanti2
 
     echo "Processing Kallisto for $1"
-    cd $WKD_ROOT/8_kallisto
+    mkdir -p $WKD_ROOT/8_kallisto; cd $WKD_ROOT/8_kallisto
     kallisto version
     time kallisto index -i $1_Kallisto.idx $WKD_ROOT/7_tofu/$1.collapsed.rep.fa 2> $1_Kallisto.index.log
-    time kallisto quant -i $WKD_ROOT/8_kallisto/$1_Kallisto.idx --rf-stranded $WKD_ROOT/8_kallisto/$1"_R1.fq" $WKD_ROOT/8_kallisto/$1"_R2.fq" -o $WKD_ROOT/8_kallisto 2> $1_Kallisto.quant.log
+    time kallisto quant -i $WKD_ROOT/8_kallisto/$1_Kallisto.idx --rf-stranded $RNASEQ_MAPPED_DIR/$1"_R1.fq" $RNASEQ_MAPPED_DIR/$1"_R2.fq" -o $WKD_ROOT/8_kallisto 2> $1_Kallisto.quant.log
     mv abundance.tsv $1.abundance.tsv
 
     # problem: retained co-ordinates, which does not input well into SQANTI2
@@ -696,11 +688,11 @@ full_characterisation(){
   ORF_dir=$WKD_ROOT/10_characterise/CPAT/$1"_cpat.ORF_prob.best.tsv"  
   
   source activate sqanti2_py3 
-  python $FULLANNO --gene=$2 --ref=$ref_dir \
+  python $FICLE --gene=$2 --ref=$ref_dir \
   --i_bed=$input_bed \
   --i_gtf=$input_gtf \
   --noISM=$noISM_path \
   --orf=$ORF_dir \
-  --o_dir=$WKD_ROOT/10_characterise/TargetGenes/ &> $WKD_ROOT/10_characterise/TargetGenes/$2"_characterise.log"
+  --o_dir=$WKD_ROOT/10_characterise/TargetGenes/ #&> $WKD_ROOT/10_characterise/TargetGenes/$2"_characterise.log"
   
 }

@@ -47,9 +47,10 @@ suppressMessages(loadfonts())
 ## ----------Functions-----------------
 
 # load all the functions
-source_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/General/5_TappAS_Differential"
+source_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/General/5_TappAS_Differential/characterise/"
 file.sources = list.files(path = source_dir, pattern="*.R", full = T)
 sapply(file.sources,source,.GlobalEnv)
+
 
 ## ----------Plot colours-----------------
 

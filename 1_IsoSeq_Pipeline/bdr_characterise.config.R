@@ -27,9 +27,9 @@ probes <- read.table(paste0(METADATA_DIR,"/Probes/FINAL_HUMAN.bed")) %>% mutate(
 
 CCS_input_dir <- paste0(WKD_ROOT,"/1_ccs")
 LiMA_input_dir <- paste0(WKD_ROOT,"/2_lima")
-REFINE_input_dir <- paste0(WKD_ROOT,"3_refine")
-CLUSTER_input_dir <- paste0(WKD_ROOT,"4_cluster")
-#CLUSTER_Merge <- read.csv(paste0(WKD_ROOT,"5_merged_cluster/AllBDRTargeted.clustered.cluster_report.csv"))
+REFINE_input_dir <- paste0(WKD_ROOT,"/3_refine")
+CLUSTER_input_dir <- paste0(WKD_ROOT,"/4_cluster")
+#CLUSTER_Merge <- read.csv(paste0(WKD_ROOT,"/5_merged_cluster/AllBDRTargeted.clustered.cluster_report.csv"))
 
 
 ## ---------- SQANTI classification files -----------------
@@ -65,5 +65,5 @@ names(Probes_files) <- list.files(path = paste0(WKD_ROOT, "/6b_target_rate"), pa
 
 ##-------------------------------------------------------------------------
 
-anno_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/ISO_CHAR/TargetGenes"
+anno_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/A_IsoSeq/10_characterise/TargetGenes"
 

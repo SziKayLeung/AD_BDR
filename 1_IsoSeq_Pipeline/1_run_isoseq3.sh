@@ -18,8 +18,9 @@
 
 # source config file and function script
 module load Miniconda2/4.3.21
-source $SC_ROOT/bdr_isoseq_config.sh
-source $SC_ROOT/01_source_functions.sh
+SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
+source $SC_ROOT/1_IsoSeq_Pipeline/bdr_isoseq.config
+source $SC_ROOT/1_IsoSeq_Pipeline/01_source_functions.sh
 
 
 ##-------------------------------------------------------------------------
