@@ -1,0 +1,653 @@
+---
+title: "Human Tau Isoforms"
+author: "Szi Kay Leung"
+date: "`r Sys.Date()`"
+
+output:
+  rmdformats::material:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: true
+    highlight: tango
+    code_folding: hide
+    fig_caption: true
+    cards: true
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# library
+suppressMessages(library("dplyr"))
+suppressMessages(library("stringr"))
+suppressMessages(library("ggplot2"))
+suppressMessages(library("cowplot"))
+suppressMessages(library("readxl"))
+suppressMessages(library("tibble"))
+suppressMessages(library("ggdendro"))
+suppressMessages(library("pheatmap"))
+suppressMessages(library("tidyr"))
+suppressMessages(library("wesanderson"))
+suppressMessages(library("scales"))
+suppressMessages(library("viridis"))
+suppressMessages(library("stats"))
+
+source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/Whole_Transcriptome_Paper/Output/SQANTI_General.R")
+
+```
+
+# Aim
+
+**To characterise and quantify tau isofoms in post-mortem brain tissue and AD mouse models**    
+
+\linebreak
+Different angles using long-read datasets:\
+
+1) Human tau isoforms in post-mortem brain tissue\
+    - Iso-Seq global transcriptome of fetal vs adult cortex (n = 7 samples)\  
+*Do we observe isoform tau isoform changes corresponding to development?*
+
+\linebreak
+2) Human tau isoforms in post-mortem AD brain tissue (BDR dataset)\ 
+    - Iso-Seq targeted transcriptome of adult cortex (n = 30 samples, n = 15 AD, n = 15 Controls)\
+*How many novel isoforms do we detect? How many isoforms fall under the standard tau classifications*\
+*Are there any differential expression changes - individual transcript or tau classification*\
+
+\linebreak
+3) Human tau isoforms in rTg4510 mouse cortex*
+    - Iso-Seq global transcriptome of mouse cortex (n = 12 samples, across 2 and 8 months)\
+    - Iso-Seq targeted transcriptome of mouse cortex (n = 24 samples, across 2, 4, 6, and 8 months)\
+    - ONT dataset targeted transcriptome of mouse cortex (n = 18 samples, across 2, 4, 6, and 8 months)\
+*Do we observe human isoform tau changes in rTg4510 transgenic mice across age, paralleling that in human development?*		
+
+\linebreak
+
+4) Mouse tau isoforms in rTg4510 mouse cortex\
+Same datasets as (3)\
+*How many novel isoforms do we detect? How many isoforms fall under the standard tau classifications*\
+*Are there any differential expression changes - individual transcript or tau classification*\
+
+\
+Note: rTg4510 mice harbour human MAPT transgene containing P301L mutation linked to familial frontotemporal dementia.\
+
+```
+
+```
+# Human Tau isoforms in post-mortem brain tissue {.tabset .tabset-pills}
+
+Observe trajectory of human MAPT splicing in human fetal (5 SMRT cells, 3 samples) and human adult samples (5 SMRT cells, 4 samples) using PacBio Iso-Seq.\
+
+ENST00000334239.12 - 0N3R\    
+ENST00000446361.7 - 0N4R\   
+
+Previous literature has reported 0N3R as the only expressed transcript in fetal, whereas all six major isoforms were detected in equal amounts of 3R and 4R isoforms (Bachmann et al. 2021).
+
+
+```{r, message=FALSE,results='hide'}
+# input files
+root <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/"
+adult.class.file <- paste0(root,"Whole_Transcriptome/Human/Post_IsoSeq/SQANTI_TAMA_FILTER/GENOME/AdultCTX_sqantitamafiltered.classification.txt")
+fetal.class.file <- paste0(root,"Whole_Transcriptome/Human/Post_IsoSeq/SQANTI_TAMA_FILTER/GENOME/FetalCTX_sqantitamafiltered.classification.txt")
+mouse.class.file <- paste0(root,"Whole_Transcriptome/All_Tg4510/Post_IsoSeq/SQANTI_TAMA_FILTER/GENOME/WholeIsoSeq_sqantitamafiltered.classification.txt")
+targeted.mouse.class.file <- paste0(root,"Targeted_Transcriptome/Mouse/Post_IsoSeq/SQANTI_TAMA_FILTER/AllMouseTargeted_sqantitamafiltered.classification.txt")
+
+global.class.files <- lapply(list(adult.class.file, fetal.class.file, mouse.class.file, targeted.mouse.class.file), function(x) SQANTI_class_preparation(x,"standard"))
+names(global.class.files) <- c("human_adult","human_fetal","mouse","targeted_mouse")
+
+# filter sqanti classification file by MAPT and wrangle for plotting
+filter_tau <- function(dat, name_dataset){
+  dat <- dat %>% filter(associated_gene == "MAPT") %>% select(isoform, associated_transcript,ISOSEQ_TPM) %>% reshape2::melt() %>% mutate(Dataset = name_dataset)
+  return(dat)
+}
+
+hmapt_adult <- filter_tau(global.class.files$human_adult,"Human Adult")
+hmapt_fetal <- filter_tau(global.class.files$human_fetal,"Human Fetal")
+
+# plot the TPM of identified transcripts in human samples
+ggplot(rbind(hmapt_adult,hmapt_fetal), aes(x = associated_transcript, y = value, fill = Dataset)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  labs(x = "Human MAPT Transcripts", y = "TPM")
+
+```
+
+
+# Human tau isoforms in BDR dataset {.tabset .tabset-pills}
+
+From targeted Isoform sequencing (PacBio) of BDR dataset (n = 30 samples, 15 Control, 15 AD cases)\ 
+
+1) Final annotation of *MAPT* isoforms, after *SQANTI* annotation\  
+    - Detected 46 isoforms annotated to *MAPT*, with multiple exon skipping events
+    
+2) Abundance\ 
+    - Majority of novel (NNC) isoforms detected were lowly-expressed and only detected in a few samples\
+    - Expression of tau isoforms do not cluster nicely by phenotype.\
+  
+3) Differential expression analysis\
+    - No significant isoform expression differences 
+    - Performed linear regression by isoform, controlling for age, RIN, sex, PMI - also no significant difference\
+    
+4) Tau classifications based on presence of exons 2, 3 and 10\
+    - Of the 140 isforms, majority are clustered under 0N3R, 0N4R, 1N3R, 1N4R i.e. skipping of exon 3 and inclusion of exon 10\
+    - No sigificant isoform expression differences using Tau classification - insufficient coverage?\
+    
+**Next steps:**\
+    - Aligning ROSMAP dataset to Iso-Seq transcriptome\
+    - Performing ONT targeted sequencing to achieve deeper coverage\
+
+```{r input_variables_functions, warning=FALSE, message=FALSE,results='hide', fig.show='hide'}
+source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/Figures_Thesis/ADBDR_Functions.R")
+source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/Figures_Thesis/ADBDR_Variables.R")
+a_plots <- plot_abundance_iso_lm("MAPT",FL_reads,"BDR")
+```
+
+## Annotation {.tabset .tabset-pills}
+
+### Dendroplot
+
+20 exons after flattening the gene structure (human GENCODE hg38, v40):\
+Chr17: 45971859 - 45971945 --> Exon 2 in literature (Exon 5 on flattened)\
+Chr17: 45974385 - 45974471 --> Exon 3 in literature (Exon 6 on flattened)\
+Chr17: 46010310 - 46010402 --> Exon 10 in literature (Exon 15 on flattened)\
+
+
+```{r, warning=FALSE}
+dendro_plot("MAPT")
+```
+
+### Exon skipping
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+ES_tally_plots("MAPT")
+
+```
+
+## Abundance {.tabset .tabset-pills}
+
+### Number of samples detected
+
+Expression refers to total FL reads detected, each dot refers to an isoform/
+Number of samples detected = number of samples with more than one FL read/
+
+```{r, warning=FALSE, message=FALSE,results='hide'}
+a_plots[1] 
+```
+
+### Heatmap 
+
+Isoform expression (Log10 FL reads) of all isoforms, classified using *SQANTI* (blue and pink refer to known and novel isoforms, repespectively). 
+Controls and AD cases are denoted by grey and red bars, respectively.
+```{r}
+plot_grid(a_plots[[6]]$gtable)
+```
+
+### All isoform expression
+
+```{r, warning = FALSE, results='hide',fig.height = 15, fig.width=15}
+plot_grid(plotlist = c(a_plots[2], a_plots[3], a_plots[4], a_plots[5]))
+```
+
+## Tau classification {.tabset .tabset-pills}
+
+### Number
+
+```{r, fig.height = 10, fig.width=15, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+ptau <- plot_mapt_classification("Human","BDR")
+ptau[1]
+```
+
+### Abundance 
+
+```{r, fig.height = 10, fig.width=15, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+ptau[2]
+```
+
+# Human tau isoforms in rTg4510 model {.tabset .tabset-pills}
+
+Raw Iso-Seq reads were processed using the *Iso-Seq3* bioinformatics pipeline, merged to generate one dataset (output: high-quality, full-length transcripts in fasta format from *Iso-Seq Cluster*), which was aligned to human reference genome (hg38) using *Minimap2*. Aligned transcripts were then collapsed and quantified using *Cupcake*, followed by annotations using *SQANTI3*.
+
+1. Classification file generated from *SQANTI3* for the annotations of human *MAPT* isoforms
+2. Abundance file generated from *Cupcake* for the quantification of human *MAPT* isoforms as number of full-length reads
+3. Clustered file generated from *Iso-Seq3 Cluster* for the number of clustered reads (i.e full-length transcripts) sequenced per sample, required for determining TPM of human *MAPT* isoforms (normalisation)
+
+All three files were required for the global and targeted transcriptome datasets. 
+
+```{r input,message=FALSE,results='hide',echo=FALSE}
+# identify human tau isoforms in mouse targeted transcriptome dataset 
+targeted_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/Mouse/Post_IsoSeq/HUMAN"
+targeted.class.files = SQANTI_class_preparation(paste0(targeted_dir, "/SQANTI3/AllMouseTargeted.collapsed_classification.txt"),"nstandard") %>% 
+  filter(associated_gene == "MAPT")
+targeted.abundance = read.table(paste0(targeted_dir, "/TOFU/AllMouseTargeted.Demultiplexed_Abundance.txt"), sep = ",", header = T)
+targeted.class.files = merge(targeted.class.files, targeted.abundance, by.x = "isoform", by.y = "id") 
+targeted.phenotype = read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Raw_Data/Targeted_Transcriptome/TargetedMouse_PhenotypeTAPPAS.txt", header = T) %>% 
+  mutate(sampleID = paste0(word(sample, c(2), sep = fixed("."))),
+         genotype = ifelse(group == "CONTROL", "WT","TG"),
+         age = paste0(time,"mos")) %>% 
+  mutate(colID = paste0(sampleID,"_",genotype,"_",age))
+targeted_cluster_reads <- read.csv("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/Mouse/IsoSeq/MERGED_CLUSTER/Num_clustered_reads_per_sample.csv")
+
+# identify human tau isoforms in mouse whole transcriptome dataset 
+whole_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Whole_Transcriptome/All_Tg4510/Post_IsoSeq/HUMAN"
+whole.class.files = SQANTI_class_preparation(paste0(whole_dir, "/SQANTI3/WholeIsoSeq.collapsed_classification.txt"),"nstandard") %>% 
+  filter(associated_gene == "MAPT")
+whole.abundance = read.table(paste0(whole_dir, "/TOFU/WholeIsoSeq.Demultiplexed_Abundance.txt"), sep = ",", header = T)
+whole.class.files= merge(whole.class.files, whole.abundance, by.x = "isoform", by.y = "id") 
+whole_cluster_reads <- read.csv("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Whole_Transcriptome/All_Tg4510/IsoSeq/MERGED_CLUSTER/Num_clustered_reads_per_sample.csv")
+
+# plot label colour
+label_colour <- function(genotype){
+  if(genotype == "WT"){colour = wes_palette("Royal1")[1]}else{
+    if(genotype == "TG"){colour = wes_palette("Royal1")[2]}else{}}
+  return(colour)
+}
+
+```
+
+## Iso-Seq {.tabset .tabset-pills}
+### Tracks 
+
+Shown is a [UCSC genome browser tracks](https://genome.ucsc.edu/s/SziKayLeung/Tau%20Isoforms) of human *MAPT* isoforms. All transcripts were identified as either ISM or NNC with with no detection of FSMs, making it it difficult to differentiate degraded from intact isoforms. All transcripts had exon 2 and exon 3 skipped, and exon 10 included, such that there are versions of 0N4R isoforms. The *MAPT* splicing isoform shift between fetal and adult is observed with initial prominent expression of 0N3R isoforms, followed by increased expression of 4R isoforms. 
+
+![UCSC browser tracks](/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Images/Human_Tau.png)
+
+### Characterisation {.tabset .tabset-pills}
+
+#### Visualisation
+
+20 exons after flattening the gene structure (human GENCODE hg38, v40):\
+Chr17: 45971859 - 45971945 --> Exon 2 in literature (Exon 5 on flattened)\
+Chr17: 45974385 - 45974471 --> Exon 3 in literature (Exon 6 on flattened)\
+Chr17: 46010310 - 46010402 --> Exon 10 in literature (Exon 15 on flattened)\
+
+
+```{r, message=FALSE, warning=FALSE}
+# requires the exon tab in annotated directory after running custom script
+anno_dir="/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/Mouse/Post_IsoSeq/HUMAN/Annotations"
+dendro_plot("MAPT")
+```
+
+
+#### MAPT classifications
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+
+ptau <- plot_mapt_classification("Human","rTg4510_human")
+ptau[1]
+
+```
+
+```{r plot, message=FALSE,results='hide'}
+plot_human_isoforms <- function(dataset){
+  if(dataset == "whole"){
+    df = whole.class.files %>% 
+      mutate(transcript = paste0(isoform,"_", structural_category)) %>% 
+      select(transcript,associated_transcript,contains("WT"),contains("TG")) %>% 
+      reshape2::melt(.) %>% 
+      mutate(genotype = word(variable,c(2), sep = "_"), age = word(variable,c(3), sep = "_"), 
+             variable = word(variable,c(1), sep = "_")) 
+    
+    cluster_reads <- whole_cluster_reads
+    
+  }else{
+    df = targeted.class.files %>% 
+      mutate(transcript = paste0(isoform,"_", structural_category)) %>% 
+      select(transcript,associated_transcript,
+             targeted.phenotype[targeted.phenotype$group == "CONTROL", "sampleID"],
+             targeted.phenotype[targeted.phenotype$group == "CASE", "sampleID"]) %>% 
+      reshape::melt(.) %>% 
+      left_join(., targeted.phenotype, c("variable" = "sampleID"))
+    
+    cluster_reads <- targeted_cluster_reads
+    
+  }
+  
+  plot_trans <- function(transcript, y.var, y.label){
+    y.var <- rlang::sym(quo_name(enquo(y.var)))
+    
+    p = df[df$associated_transcript == transcript,]  %>% 
+      ggplot(., aes(x = genotype, y = !! y.var, fill = genotype)) + geom_boxplot() + geom_point() + facet_grid(transcript~age) + 
+      labs(x = "Genotype", y = y.label , title = transcript) + 
+      theme(legend.position = "none") 
+    
+    return(p)
+  }
+
+  
+  # Factor in TPM 
+  df <- merge(df, cluster_reads, by.x = "variable", by.y = "Sample") %>% 
+    mutate(TPM = value * 1000000 / num_clustered_reads) 
+  
+  all_p_TPM <- lapply(unique(df$associated_transcript), function(x) plot_trans(x, "TPM", "TPM"))
+  names(all_p_TPM) <- unique(df$associated_transcript)
+  
+  #p1 <- plot_grid(plotlist = all_p_TPM, ncol = 2)
+  
+  return(all_p_TPM)
+}
+
+w_plots <- plot_human_isoforms("whole")
+t_plots <- plot_human_isoforms("targeted")
+
+```
+
+### Iso-Seq Abundance {.tabset .tabset-pills}
+#### Global Transcriptome {.tabset .tabset-pills}
+
+##### `r names(w_plots)[1]`
+
+```{r, message=FALSE,results='hide'}
+w_plots[1]
+```
+
+##### `r names(w_plots)[2]`
+
+```{r, message=FALSE,results='hide'}
+w_plots[2]
+```
+
+##### `r names(w_plots)[3]`
+
+```{r, message=FALSE,results='hide'}
+w_plots[3]
+```
+
+##### `r names(w_plots)[5]`
+
+```{r, message=FALSE,results='hide'}
+w_plots[5]
+```
+
+##### `r names(w_plots)[4]`
+
+```{r, message=FALSE,results='hide'}
+w_plots[4]
+```
+
+#### Targeted Transcriptome {.tabset .tabset-pills}
+
+##### `r names(t_plots)[1]`
+
+```{r, message=FALSE,results='hide'}
+t_plots[1]
+```
+
+##### `r names(t_plots)[3]`
+
+```{r, message=FALSE,results='hide'}
+t_plots[3]
+```
+
+##### `r names(t_plots)[4]`
+
+```{r, message=FALSE,results='hide'}
+t_plots[4]
+```
+
+##### `r names(t_plots)[5]`
+
+```{r, message=FALSE,results='hide'}
+t_plots[5]
+```
+
+##### `r names(t_plots)[2]`
+
+```{r, message=FALSE,results='hide',fig.height = 30}
+t_plots[2]
+```
+
+## ONT {.tabset .tabset-pills}
+
+### Tracks 
+![UCSC browser tracks](/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Images/rTg4510_ont_human_mapt.png)
+
+### Differential Expression Analysis {.tabset .tabset-pills}
+
+```{r message=FALSE,results='hide'}
+# identify human tau isoforms in mouse targeted transcriptome dataset 
+human_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/ONT/Targeted_Transcriptome/TALON_Human/Filtered"
+human.class.files = SQANTI_class_preparation(paste0(human_dir, "/SQANTI3/ONTTargeted_filtered_talon_classification.filtered_lite_classification.txt"),"nstandard") %>% filter(associated_gene == "MAPT")
+human.abundance = read.table(paste0(human_dir, "/ONTTargeted_filtered_talon_abundance_filtered.tsv"), sep = "\t", header = T)
+human.class.files = merge(human.class.files, human.abundance, by.x = "isoform", by.y = "annot_transcript_id") 
+targeted.phenotype = read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Raw_Data/Targeted_Transcriptome/TargetedMouse_PhenotypeTAPPAS.txt", header = T) %>% 
+  mutate(sampleID = paste0(word(sample, c(2), sep = fixed("."))),
+         genotype = ifelse(group == "CONTROL", "WT","TG"),
+         age = paste0(time,"mos")) %>% 
+  mutate(colID = paste0(sampleID,"_",genotype,"_",age))
+
+samples = c("S19","K24","L22","M21","O18","O23","O22","P19","T20","Q20","Q21","S18","S23","Q18","Q17","L18","Q23","T18")                  
+df = human.class.files %>% select(isoform, associated_transcript, associated_gene, samples) %>% reshape2::melt() %>% 
+  left_join(., targeted.phenotype, by=c("variable"="sampleID")) 
+
+plot_ont_expression <- function(isoform){
+  p <- ggplot(df[df$isoform == isoform,], aes(x = as.factor(time), y = value, colour = group)) + 
+    geom_boxplot() + geom_point(position=position_jitterdodge()) + mytheme +
+    labs(x = "Age (months)", y = "ONT FL reads", title = isoform) + 
+    scale_colour_manual(values = c(label_colour("TG"),label_colour("WT")), labels=c("TG","WT")) + 
+    theme(legend.position = "bottom")
+  
+  return(p)
+}
+
+```
+
+#### All
+
+```{r, fig.width=15}
+ggplot(df, aes(x = as.factor(time), y = value, colour = isoform)) + geom_point() + facet_grid(~genotype) + 
+  labs(x = "Age (months)", y = "Expression")
+```
+
+#### TALONT000279659
+
+```{r}
+plot_ont_expression("TALONT000279659")
+```
+
+#### TALONT000279659
+
+```{r}
+plot_ont_expression("TALONT000280246")
+```
+
+#### ENST00000351559.10
+```{r}
+plot_ont_expression("ENST00000351559.10")
+```
+
+#### ENST00000334239.12
+```{r}
+plot_ont_expression("ENST00000334239.12")
+
+```
+
+
+# Mouse tau isoforms in rTg4510 model {.tabset .tabset-pills}
+
+## Global Transcriptome {.tabset .tabset-pills}
+
+Observe trajectory of mouse MAPT splicing in mouse rTg4510 samples (8 SMRT cells, 8 samples) using PacBio Iso-Seq with a global transcriptome approach, across 2 ages (2 months and 8 months).\
+
+ENSMUST00000028020.10 - 2N4R\
+ENSMUST00000106992.9 - 0N4R\
+ENSMUST00000106993.9 - 0N4R\
+
+Do not observe splicing human tau splicing trajectory observed in literature (McMillan et al. 2008, Habekost et al. 2021) - possibly, because these mice too old?\
+
+```{r, message=FALSE,results='hide'}
+mouse_dat_plot <- global.class.files$mouse %>% filter(associated_gene == "Mapt") %>% select(isoform,associated_transcript, starts_with("FL.")) %>% 
+  reshape2::melt() %>% 
+  mutate(Sample = word(word(variable,c(1), sep = fixed("_")), c(2), sep = fixed("."))) %>% 
+  full_join(., whole_cluster_reads, by = "Sample") %>% 
+  mutate(TPM = value/ num_clustered_reads * 1000000,
+         genotype = word(variable,c(2),sep = fixed("_")),
+         age = word(variable,c(3),sep = fixed("_"))) 
+
+ggplot(mouse_dat_plot, aes(x = age, y = TPM, colour = associated_transcript)) + geom_point(size = 3) + 
+    facet_grid(~genotype,scales = "free", space = "free") +
+    stat_summary(data=mouse_dat_plot, aes(x=age, y=value, group=associated_transcript), fun ="mean", geom="line", linetype = "dotted", size = 1.5) 
+
+
+
+```
+
+## Targeted Transcriptome {.tabset .tabset-pills}
+
+From targeted Isoform sequencing (PacBio & ONT) of rTg4510 mouse cortex\
+
+1) Final annotation of MAPT isoforms, after SQANTI annotation\
+    - Detected 140 isoforms annotated to MAPT, with also multiple exon skipping events\
+    
+2) Differential expression analysis\
+    - using Iso-Seq dataset: No significant isoform expression differences\
+    
+3) Tau classifications based on presence of exons 2, 3 and 10\
+    - Of the 140 isforms, majority are clustered under 0N3R, 0N4R, 1N3R, 1N4R i.e. skipping of exon 3 and inclusion of exon 10
+    - No sigificant isoform expression differences using Tau classification - insufficient coverage?
+
+### Annotation
+
+20 exons after flattening the gene structure (human GENCODE hg38, v40):\
+Chr2: 104287123 - 104287209 --> Exon 2 in literature (Exon 3 on flattened)\
+Chr2: 104289908 - 104289994 --> Exon 3 in literature (Exon 4 on flattened)\
+Chr2: 104318157 - 104318249 --> Exon 10 in literature (Exon 12 on flattened)\
+
+```{r, message=F, warning=FALSE}
+anno_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/ONT/Targeted_Transcriptome/TALON/All/Merged/Re_TargetGenes"
+MAPT_iso_class = read.csv(paste0(anno_dir, "/Mapt/Stats/Mapt_further_classifications.csv"))
+dendro_plot("Mapt")
+```
+
+### Tau classification 
+
+```{r, fig.width = 15, echo=FALSE, message=FALSE, results='hide'}
+### input data for downstream function
+# phenoptype data
+targetedpheno = read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Raw_Data/Targeted_Transcriptome/TargetedMouse_PhenotypeTAPPAS.txt", header = T) %>% mutate(Column.ID = sample, sample = word(sample,c(2),sep = fixed("."))) %>%
+  `colnames<-`(c("sample", "Age", "Genotype","Column.ID")) 
+
+# abundance data - normalised TPM (therefore removed if lowly expressed)
+TPM <- read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/rTg4510/F_ONT_Targeted/thesis_dump/TALON/TAPPAS_OUTPUT/InputData/input_normalized_matrix.tsv") %>% rownames_to_column(var = "isoform")
+
+
+# only ONT abundance, but all classifications
+ptau <- plot_mapt_classification("Mouse","rTg4510_ont")
+ptau[1]
+```
+
+
+Shown below are the USCS genome browser tracks of the 5 ONT isoforms that were unclassified using the standard tau classifications.
+
+![UCSC browser tracks](/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Images/rTg4510_unclassified_mapt.png)
+
+### Differential Expression Analysis {.tabset .tabset-pills}
+
+#### Iso-Seq
+
+Observe trajectory of mouse MAPT splicing in mouse rTg4510 samples (3 SMRT cells, 12 samples multiplexed) using PacBio Iso-Seq with a targeted approach, across 4 ages (2, 4, 6 and 8 months).  
+
+```{r, message=FALSE,results='hide'}
+mouse_dat_plot <- global.class.files$targeted_mouse %>% filter(associated_gene == "Mapt") %>% select(isoform,associated_transcript, starts_with("FL.")) %>% 
+  reshape2::melt() %>% 
+  mutate(Sample = word(word(variable,c(1), sep = fixed("_")), c(2), sep = fixed("."))) %>% 
+  full_join(., targeted_cluster_reads, by = "Sample") %>% 
+  mutate(TPM = value/ num_clustered_reads * 1000000) %>%
+  left_join(., targeted.phenotype, by = c("Sample" = "sampleID"))
+
+ggplot(mouse_dat_plot, aes(x = age, y = TPM, colour = associated_transcript)) + geom_point(size = 3) + 
+    facet_grid(~genotype,scales = "free", space = "free") +
+    stat_summary(data=mouse_dat_plot, aes(x=age, y=value, group=associated_transcript), fun ="mean", geom="line", linetype = "dotted", size = 1.5) 
+
+```
+
+#### ONT {.tabset .tabset-pills}
+
+##### Tracks
+
+Shown is a [UCSC genome browser tracks](https://genome.ucsc.edu/s/SziKayLeung/Mapt) of mouse *Mapt* isoforms, with the top five differentially expressed isoforms shown. 
+
+![UCSC browser tracks](/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Images/rTg4510_ont_diff.png)
+
+
+##### Expression
+
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE,fig.width=30,fig.height=15}
+# read in differential expression analysis results from ONT 
+read_dea_files <- function(dir){
+  f = excel_sheets(dir) %>% purrr::set_names() %>% purrr::map(read_excel, path = dir)
+  return(f)
+}
+
+# function to plot the individual transcripts
+plot_transexp_individual <- function(InputIso,Norm_transcounts,type, name){
+  plot_title <- paste0(InputIso,"\n","Transcript Expression","\n")
+  df <-  Norm_transcounts  %>% filter(isoform == InputIso)
+  df$grouping1 <- paste0(df$group, "_", df$time)
+  df <- df[order(match(df$grouping1, c("WT_2","WT_8","TG_2","TG_8"))),]
+  df$Age <- as.factor(df$time)
+  df$groupings <- paste0(df$isoform,"_", df$group, "_", df$time)
+  
+  legend_theme <- theme(panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      legend.position="right",
+                      legend.justification=c(0,1),
+                      legend.margin=unit(1,"cm"),
+                      legend.box="vertical",
+                      legend.box.just = "left",
+                      legend.key.size=unit(1,"lines"),
+                      legend.text.align=0,
+                      legend.background=element_blank())
+  
+  
+  p <- ggplot(df,aes(x = Age, y = value, colour = group)) + 
+    geom_point(size = 3) +
+    mytheme + labs(x = "Age (months)", y = "ONT Normalised Counts",title = plot_title) +
+    theme(strip.background = element_blank(), 
+          plot.title = element_text(hjust = 0.5, size = 16,face = "italic"),
+          panel.spacing = unit(2, "lines")) +
+    legend_theme +
+    stat_summary(data=df, aes(x=Age, y=value, group=group), fun ="mean", geom="line", linetype = "dotted") +
+    scale_y_continuous(trans='log10') + 
+    theme(legend.position = "none") +
+    scale_colour_manual(name = "Genotype", values = c(label_colour("TG"),label_colour("WT")))
+
+  
+  return(p)
+}
+
+IsoSeq_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/Mouse/DiffAnalysis_noRNASEQ"
+ONT_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/ONT/Targeted_Transcriptome/TALON/"
+
+tappassigtrans <- lapply(list("iso" = paste0(IsoSeq_dir,"/TAPPAS_OUTPUT/DifferentialTransExpression_Analysis.xlsx"),
+                              "ont" = paste0(ONT_dir,"TAPPAS_OUTPUT/DifferentialTransExpression_Analysis.xlsx")), 
+                         function(x) read_dea_files(x))
+
+# subsetting results to only differerentially expressed transcripts associated with mapt
+mapt_diff_t <- tappassigtrans$ont$TargetedOnt_Transexp[tappassigtrans$ont$TargetedOnt_Transexp$associated_gene == "Mapt",] 
+mapt_diff_t = merge(mapt_diff_t, MAPT_iso_class,by = "isoform") %>% arrange(`p-value`)
+
+source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/Nanopore/Figures_Thesis/ONT_TargetedDiffAnalysis_Variables.R")
+source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Figures_Thesis/DiffAnalysis/DifferentialPlots.R")
+
+tappasont  <- input_tappasfiles(tappas_input_dir$ont,"ont")
+OntExp <- tappas_resultsanno(class.files$ont,tappasont$input_norm,phenotype$ont)
+
+plot_diff_t <- lapply(mapt_diff_t$isoform, function(x) plot_transexp_individual(x, OntExp$Norm_transcounts, "Transcript","ONT Expression"))
+
+plot_grid(plotlist = plot_diff_t)
+
+```
+
+
+
+##### Expression by classification
+
+Shown below is a table of the top 5 most differentially expressed transcripts, 3 of which are ISM of known transcripts and 2 are known. Notably, four of these isoforms are missing exons 2 and 3, but contain exon 10. 
+
+```{r}
+knitr::kable(mapt_diff_t %>% arrange(`p-value`) %>% .[1:5,c("isoform","associated_transcript","MAPT_classification")])
+
+```
+
+```{r,echo=FALSE, message=FALSE, results='hide', warning=FALSE, figure.width=30}
+ptau[2] 
+```
