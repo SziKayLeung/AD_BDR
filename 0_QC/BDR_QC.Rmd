@@ -1,0 +1,205 @@
+---
+title: "BDR QC"
+author: "Szi Kay Leung"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+suppressMessages(library("ggplot2"))
+suppressMessages(library("stringr"))
+suppressMessages(library("dplyr"))
+suppressMessages(library("tidyr"))
+suppressMessages(library("ggrepel"))
+source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen/aesthetics_basics_plots/draw_density.R")
+source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen/aesthetics_basics_plots/pthemes.R")
+source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen/transcriptome_stats/read_sq_classification.R")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r cars}
+dirnames <- list(
+  bdr = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/"
+)
+
+input <- list(
+  isoPhenotype = read.csv(paste0(dirnames$bdr, "0_metadata/A_IsoSeq/Targeted_Sample_Demographics.csv")),
+  ontPhenotype = read.csv(paste0(dirnames$bdr, "0_metadata/B_ONT/Selected_ONTTargeted_BDR.csv")),
+  isoDemux=read.csv(paste0(dirnames$bdr,"A_IsoSeq/3_refine/read_counts.txt"), header = FALSE) %>% `colnames<-`(c("file", "readcounts")),
+  B1Demux=read.csv(paste0(dirnames$bdr,"D_ONT/1b_demultiplex_merged/Batch1/read_counts.txt"), header = FALSE) %>% `colnames<-`(c("file", "readcounts")),
+  B2Demux=read.csv(paste0(dirnames$bdr,"D_ONT/1b_demultiplex_merged/Batch2/read_counts.txt"), header = FALSE) %>% `colnames<-`(c("file", "readcounts")),
+  ontClass = SQANTI_class_preparation(paste0(dirnames$bdr, "D_ONT/5_cupcake/7_sqanti3/ontBDR_collapsed_RulesFilter_result_classification.targetgenes_counts.txt"),"ns"),
+  ontClassFil = SQANTI_class_preparation(paste0(dirnames$bdr, "D_ONT/5_cupcake/7_sqanti3/ontBDR_collapsed_RulesFilter_result_classification.targetgenes_counts_filtered.txt"),"ns")
+)
+
+# datawrangle
+input$ontDemux <- rbind(input$B1Demux %>% mutate(dataset = "Batch1"),input$B2Demux %>% mutate(dataset = "Batch2"))
+input$ontPhenotype <- input$ontPhenotype %>% mutate(barcode = ifelse(barcode < 10,paste0("BC0",barcode),paste0("BC",barcode)))
+input$ontDemux <- input$ontDemux %>% mutate(log10reads = log10(readcounts))
+input$ontDemux <- input$ontDemux %>% mutate(barcode = word(file,c(1),sep=fixed("_"))) %>%
+  left_join(., input$ontPhenotype, by = "barcode") %>% 
+  mutate(sample = word(sample,c(1),sep=fixed(".")))
+
+input$isoDemux <- input$isoDemux %>% mutate(barcode = word(file,c(1),sep=fixed("."))) 
+input$isoDemux <- merge(input$isoDemux, input$isoPhenotype, by.x = "barcode", by.y = "Sample.ID") 
+input$isoDemux <- input$isoDemux %>% mutate(sample = paste0(str_replace(BBN.ID,"_","")))
+```
+
+## Demultiplexed reads {.tabset .tabset-fade}
+### ONT dataset 
+```{r}
+input$ontDemux <- input$ontDemux %>% mutate(label = ifelse(readcounts < 1500,as.character(sample),""))
+ggplot(input$ontDemux, aes(x = as.factor(BraakTangle_numeric), y = log10(readcounts),colour = dataset)) + 
+  geom_boxplot(outlier.shape = NA) + geom_point(position = position_jitterdodge())+
+  geom_text_repel(aes(label = label), box.padding = 2)+
+  labs(x = "Braak",y="Raw Read Counts (log10") +
+  ylim(1,7) +
+  theme_classic()
+```
+
+### Iso-Seq dataset 
+```{r}
+ggplot(input$isoDemux, aes(x = as.factor(Braak), y = log10(readcounts))) + 
+  geom_boxplot(outlier.shape = NA) + geom_point()+
+  labs(x = "Braak",y="Raw Read Counts (log10") + ylim(1,7) +
+  theme_classic()
+```
+
+### Dataset comparison 
+
+```{r}
+merge(input$isoDemux[,c("Braak","sample","readcounts")],input$ontDemux[,c("sample","readcounts","dataset")],by="sample",suffixes=c("_iso","_ont")) %>% 
+  reshape2::melt(id=c("sample","dataset","Braak")) %>% 
+  mutate(platform = word(variable, c(2),sep=fixed("_"))) %>%
+  ggplot(., aes(x = sample, y = log10(value), fill = platform))  +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(x= "Sample", y = "Raw Read Counts (log10)") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_grid(~Braak,scales="free")
+
+
+```
+
+### RIN
+
+```{r results=FALSE, warning=FALSE,message=FALSE}
+density_plot(input$ontDemux,"log10reads","RINe","ReadCounts","RIN","")
+```
+
+## ONT - Final Target Reads {.tabset .tabset-fade}
+
+### FL Reads
+```{r}
+ontTargetReads <- input$ontClass %>% dplyr::select(starts_with(c("B1","B2"))) %>% 
+  apply(., 2, sum) %>% 
+  as.data.frame() %>% 
+  `colnames<-`(c("FLreads")) %>%
+  tibble::rownames_to_column("sample") %>%
+  mutate(dataset = as.factor(word(sample,c(1),sep=fixed("."))),
+         Braak = word(sample,c(3),sep=fixed(".")),
+         sample = word(sample,c(2),sep=fixed(".")),
+         log10reads = ifelse(FLreads > 0,log10(FLreads),0),
+         label = ifelse(FLreads < 100, sample, "")) 
+
+ggplot(ontTargetReads, aes(x = as.factor(Braak), y = log10reads,colour = dataset)) + 
+  geom_boxplot(outlier.shape = NA) + geom_point(position = position_jitterdodge())+
+  geom_text_repel(aes(label = label), box.padding = 2)+
+  labs(x = "Braak",y="FL Read Counts (log10") +
+  ylim(0,7) +
+  theme_classic()
+```
+
+### Target Rate {.tabset .tabset-fade}
+
+#### Braak
+
+```{r message=FALSE, warning=FALSE}
+merge(ontTargetReads[,c("sample","FLreads")],input$ontDemux[,c("sample","readcounts","dataset","BraakTangle_numeric")],by="sample") %>%
+  mutate(targetRate=FLreads/readcounts*100)%>%
+  ggplot(.,aes(x=as.factor(BraakTangle_numeric),y=targetRate)) + 
+  geom_boxplot() + geom_point() + facet_grid(~dataset) +
+  theme_classic() +labs(x = "Braak", y = "Target Rate (%)")
+```
+
+#### Gene
+
+```{r message=FALSE,, warning=FALSE}
+targetGeneTarget <- input$ontClass %>% dplyr::select(associated_gene,starts_with(c("B1","B2"))) %>% 
+  group_by(associated_gene) %>%
+  dplyr::summarise_each(funs(sum)) %>% 
+  reshape2::melt() %>% 
+  mutate(sample=word(variable,c(2),sep=fixed(".")),
+         dataset=word(variable,c(1),sep=fixed(".")))%>%
+  left_join(.,input$ontDemux[,c("readcounts","sample")])%>%
+  mutate(targetRate = value/readcounts * 100)
+
+ggplot(targetGeneTarget,aes(x = associated_gene, y = targetRate)) + 
+  geom_boxplot() + 
+  facet_grid(~dataset) +
+  theme_classic() + labs(x = "Target Gene", y = "Target Rate (%)") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+### Read Distribution by Batch
+
+```{r}
+identify_dataset <- function(dat1,dat2){
+  if(dat1 == 0 & dat2 != 0){return("B2")
+  }else if(dat1 != 0 & dat2 == 0){return("B1")
+  }else{return("Both")}
+}
+
+
+generateBatchReads <- function(dat){
+  ontBatchReads <- list(
+  B1 = as.data.frame(apply(dat %>% dplyr::select(starts_with("B1.")), 1, sum)) %>% `colnames<-`(c("counts")) %>% mutate(Batch = "B1"),
+  B2 = as.data.frame(apply(dat %>% dplyr::select(starts_with("B2.")), 1, sum)) %>% `colnames<-`(c("counts")) %>% mutate(Batch = "B2")
+  )
+
+  ontBatchReads <- lapply(ontBatchReads, function(x) x %>% tibble::rownames_to_column(., var = "isoform"))
+  ontBatchReads <- rbind(ontBatchReads$B1, ontBatchReads$B2)
+  ontBatchReadsAnno <- merge(spread(ontBatchReads,key=Batch,value=counts), 
+                             dat[,c("isoform","associated_gene","structural_category")], by = "isoform", all.x=TRUE)
+  ontBatchReadsAnno$dataset <- apply(ontBatchReadsAnno[,c('B1','B2')], 1, function(x) identify_dataset(x[1],x[2]))
+  
+  output <- list(ontBatchReads,ontBatchReadsAnno)
+  names(output) <- c("ontBatchReads","ontBatchReadsAnno")
+  return(output)
+}
+ontBatchReadsNF <- generateBatchReads(input$ontClass)
+ontBatchReadsF <- generateBatchReads(input$ontClassFil)
+
+ggplot(ontBatchReadsNF$ontBatchReads, aes(x = log10(counts), fill = Batch)) + geom_density(alpha = 0.2)
+```
+
+### Isoform number by Batch {.tabset .tabset-fade}
+
+#### Not Filtered
+
+```{r}
+plotNum <- function(ontBatchReadsAnno){
+  p <- ontBatchReadsAnno %>% group_by(dataset,associated_gene,structural_category) %>% tally() %>%
+    filter(structural_category != "NA") %>%
+    ggplot(.,aes(x = reorder(associated_gene,-n), y = n, fill = structural_category)) +
+    geom_bar(stat = "identity") + facet_grid(~dataset) +
+    theme_classic() + 
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+    labs(x = "Target Genes", y = "Number of isoforms")
+  
+  return(p)
+}
+
+plotNum(ontBatchReadsNF$ontBatchReadsAnno)
+```
+
+#### Filtered
+```{r}
+plotNum(ontBatchReadsF$ontBatchReadsAnno)
+```
+
+
