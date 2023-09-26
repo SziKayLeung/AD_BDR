@@ -10,7 +10,7 @@
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
 
 ## ---------------------------
-## Purpose: Generate files (Iso-Seq annotation and expression) needed for tappAS 
+## Purpose: Generate files (ONT annotation and expression) needed for tappAS 
 ## 
 ## 05/08/2022: Recreated files
 ## ---------------------------
@@ -28,19 +28,19 @@ source $SC_ROOT/2_Differential_Analysis/01_source_functions.sh
 ##-------------------------------------------------------------------------
 #************************************* Prepare files for TappAS
 # 4 files:
-# 1) Iso-Seq Annotation scaffold file                       = XX.collapsed.gff3
-# 2) Iso-Seq targeted isoforms                              = XX_TargetTrans.txt
-# 3) Iso-Seq Expression File
-# 4) Iso-Seq Phenotype File
+# 1) ONT Annotation scaffold file                       = XX.collapsed.gff3
+# 2) ONT targeted isoforms                              = XX_TargetTrans.txt
+# 3) ONT Expression File
+# 4) ONT Phenotype File
 
 
 # create directory 
-mkdir -p $ISO_DIFF_DIR
+mkdir -p $ONT_DIFF_DIR $TAPPAS_INPUT_DIR/D_ONT
 
 # File 1
 # Annotation file generated from IsoAnnotLite in SQANTI3
 # Note, RNA-Seq reads were not used as junction filter, given lower depth and reduce false negative
-cp $ISO_WKD_ROOT/$NAME".collapsed.gff3" $TAPPAS_INPUT_DIR
+cp $ONT_WKD_ROOT/tappAS_annot_from_SQANTI3.gff3 $TAPPAS_INPUT_DIR/D_ONT
 
 # File 2
 # Tab file of arget isoforms associated to target gene to be used as inclusion criteria for tappAS
@@ -52,12 +52,8 @@ subset_targets $ISO_DIFF_DIR
 # regenerate expression matrix for tappas from long reads FL read counts, 
 # include non-target isoforms to ensure not skewing downstream normalisation
 # counts_subset_4tappas <input_class> <output_class> <type_genes>
-counts_subset_4tappas $ISO_WKD_ROOT/$SQNAME"_classification.txt" $ISO_DIFF_DIR/$NAME".expression.txt" notAD
+Rscript $TALEXPCONVERT -e ${ONT_TALON_ABUNDANCE} -o $TAPPAS_INPUT_DIR/D_ONT -n ${NAME}"_talon_expression"
 
 # File 4
-cp $ISO_TAPPAS_PHENO $ISO_DIFF_DIR
+cp $ONT_TAPPAS_PHENO $TAPPAS_INPUT_DIR/D_ONT
 
-##-------------------------------------------------------------------------
-#************************************* Transfer files 
-mkdir -p $TAPPAS_INPUT_DIR/IsoSeq_Expression
-cp $ISO_DIFF_DIR/* $TAPPAS_INPUT_DIR/IsoSeq_Expression

@@ -61,7 +61,10 @@ scp -r sl693@login.isca.ex.ac.uk:/gpfs/mrc0/projects/Research_Project-MRC148213/
 cd $DiffAnalysis_WKD; mkdir TAPPAS_OUTPUT
 cd $DiffAnalysis_WKD/TAPPAS_OUTPUT; mkdir IsoSeq_Expression RNASeq_Expression 
 scp -r sLeung@knight.ex.ac.uk:/mnt/data1/Szi/tappasWorkspace/tappasWorkspace/Projects/Project.02103392608.tappas/* $DiffAnalysis_WKD/TAPPAS_OUTPUT/IsoSeq_Expression/
-  scp -r sLeung@knight.ex.ac.uk:/mnt/data1/Szi/tappasWorkspace/tappasWorkspace/Projects/Project.01950582580.tappas/* $DiffAnalysis_WKD/TAPPAS_OUTPUT/RNASeq_Expression/
-  
+scp -r sLeung@knight.ex.ac.uk:/mnt/data1/Szi/tappasWorkspace/tappasWorkspace/Projects/Project.01950582580.tappas/* $DiffAnalysis_WKD/TAPPAS_OUTPUT/RNASeq_Expression/
+
+mkdir -p $TAPPAS_OUTPUT_DIR/D_ONT
+scp -r sLeung@knight.ex.ac.uk:/mnt/data1/Szi/tappasWorkspace/Projects/Project.1738176673.tappas/* $TAPPAS_OUTPUT_DIR/D_ONT
+ 
   
   
