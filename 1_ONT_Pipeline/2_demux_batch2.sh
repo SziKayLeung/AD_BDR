@@ -2,16 +2,21 @@
 #SBATCH --export=ALL # export all environment variables to the batch job
 #SBATCH -D . # set working directory to .
 #SBATCH -p mrcq # submit to the parallel queue
-#SBATCH --time=50:00:00 # maximum walltime for the job
+#SBATCH --time=144:00:00 # maximum walltime for the job
 #SBATCH -A Research_Project-MRC148213 # research project to submit under
 #SBATCH --nodes=1 # specify number of nodes
+#SBATCH --ntasks-per-node=12 # specify number of processors per node
+#SBATCH --mem=200G # specify bytes of memory to reserve
 #SBATCH --ntasks-per-node=16 # specify number of processors per node
 #SBATCH --mail-type=END # send email at job completion
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
-#SBATCH --array=0-52%15
-#SBATCH --output=4b_talon_label-%A_%a.o
-#SBATCH --error=4b_talon_label-%A_%a.e
+#SBATCH --array=0-11053%50
+#SBATCH --output=../Output/ONTBatch2/2log/2_demux-%A_%a.o
+#SBATCH --error=../Output/ONTBatch2/2log/2_demux-%A_%a.e
 
+
+# 09/01/2023: ADBDR targeted datasets Batch 2
+# 11054 fastq files in RAW_FASTQ_3 dir
 
 ##-------------------------------------------------------------------------
 
@@ -21,9 +26,16 @@ SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
 source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
 source $SC_ROOT/1_ONT_Pipeline/01_source_functions.sh
 
-sample=${ALL_SAMPLES_NAMES[${SLURM_ARRAY_TASK_ID}]}
 
 ##-------------------------------------------------------------------------
-# run_talon_label <input_sam> <output_dir>
-run_talon_label ${WKD_ROOT}/4_tclean/${sample}/${sample}_clean.sam ${WKD_ROOT}/5_talon
 
+raw_fastq3_files=($(ls ${RAW_FASTQ_3}/*fastq.gz))
+#echo "${#raw_fastq3_files[@]}"
+
+SamplePath=${raw_fastq3_files[${SLURM_ARRAY_TASK_ID}]}
+Sample=$(basename ${SamplePath} .fastq.gz)
+
+echo "Processing ${Sample}"
+
+# 3) run_porechop <raw.fastq.gz> <output_dir>
+run_porechop ${SamplePath} ${WKD_ROOT}/1_demultiplex/Batch2/${Sample} > ${WKD_ROOT}/1b_demultiplex_merged/Batch2/log/${Sample}.log

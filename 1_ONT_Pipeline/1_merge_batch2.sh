@@ -2,16 +2,19 @@
 #SBATCH --export=ALL # export all environment variables to the batch job
 #SBATCH -D . # set working directory to .
 #SBATCH -p mrcq # submit to the parallel queue
-#SBATCH --time=50:00:00 # maximum walltime for the job
+#SBATCH --time=144:00:00 # maximum walltime for the job
 #SBATCH -A Research_Project-MRC148213 # research project to submit under
 #SBATCH --nodes=1 # specify number of nodes
+#SBATCH --ntasks-per-node=12 # specify number of processors per node
+#SBATCH --mem=200G # specify bytes of memory to reserve
 #SBATCH --ntasks-per-node=16 # specify number of processors per node
 #SBATCH --mail-type=END # send email at job completion
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
-#SBATCH --array=0-52%15
-#SBATCH --output=4b_talon_label-%A_%a.o
-#SBATCH --error=4b_talon_label-%A_%a.e
+#SBATCH --output=../Output/ONTBatch2/1_merge_batch2.o
+#SBATCH --error=../Output/ONTBatch2/1_merge_batch2.e
 
+
+# 09/03/2023: ADBDR targeted datasets Batch 3 (reran on PromethION on just 20 target AD genes)
 
 ##-------------------------------------------------------------------------
 
@@ -21,9 +24,8 @@ SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
 source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
 source $SC_ROOT/1_ONT_Pipeline/01_source_functions.sh
 
-sample=${ALL_SAMPLES_NAMES[${SLURM_ARRAY_TASK_ID}]}
 
 ##-------------------------------------------------------------------------
-# run_talon_label <input_sam> <output_dir>
-run_talon_label ${WKD_ROOT}/4_tclean/${sample}/${sample}_clean.sam ${WKD_ROOT}/5_talon
 
+# 1) run_merge <raw_directory> <sample_output_name>
+run_merge ${RAW_FASTQ_3} $RAW_ROOT_DIR/P0073_20230209_10918_pass_merged.fastq.gz
