@@ -21,8 +21,8 @@ module load Miniconda2/4.3.21
 SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
 source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
 
-FICLE_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/FICLE/
-LOGEN_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen
+FICLE_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/FICLE/
+LOGEN_ROOT=//lustre/projects/Research_Project-MRC148213/lsl693/scripts/LOGen
 export PATH=$PATH:${LOGEN_ROOT}/compare_datasets
 export PATH=$PATH:${LOGEN_ROOT}/target_gene_annotation
 export PATH=$PATH:${LOGEN_ROOT}/merge_characterise_dataset

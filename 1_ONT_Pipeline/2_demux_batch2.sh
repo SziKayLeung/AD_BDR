@@ -11,8 +11,8 @@
 #SBATCH --mail-type=END # send email at job completion
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
 #SBATCH --array=0-11053%50
-#SBATCH --output=../Output/ONTBatch2/2log/2_demux-%A_%a.o
-#SBATCH --error=../Output/ONTBatch2/2log/2_demux-%A_%a.e
+#SBATCH --output=../OutputADBDR/ONTBatch2/2log/2_demux-%A_%a.o
+#SBATCH --error=../OutputADBDR/ONTBatch2/2log/2_demux-%A_%a.e
 
 
 # 09/01/2023: ADBDR targeted datasets Batch 2
@@ -22,7 +22,7 @@
 
 # source config file and function script
 module load Miniconda2/4.3.21
-SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
+SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
 source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
 source $SC_ROOT/1_ONT_Pipeline/01_source_functions.sh
 
@@ -38,4 +38,4 @@ Sample=$(basename ${SamplePath} .fastq.gz)
 echo "Processing ${Sample}"
 
 # 3) run_porechop <raw.fastq.gz> <output_dir>
-run_porechop ${SamplePath} ${WKD_ROOT}/1_demultiplex/Batch2/${Sample} > ${WKD_ROOT}/1b_demultiplex_merged/Batch2/log/${Sample}.log
+run_porechop ${SamplePath} ${WKD_ROOT}/1_demultiplex/Batch2/${Sample} > ${WKD_ROOT}/1_demultiplex/Batch2/log/${Sample}.log

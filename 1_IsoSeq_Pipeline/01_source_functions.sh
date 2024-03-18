@@ -204,6 +204,7 @@ run_map_cupcakecollapse(){
     mkdir -p $WKD_ROOT/6_minimap; cd $WKD_ROOT/6_minimap 
     minimap2 -t 30 -ax splice -uf --secondary=no -C5 -O6,24 -B4 $GENOME_FASTA $WKD_ROOT/5_merged_cluster/$1.clustered.hq.fastq > $1.sam 2> $1.map.log
     samtools sort -O SAM $1.sam > $1.sorted.sam
+    samtools view -bS $1.sam > $1.bam
 
     # Alignment stats
     mkdir PAF; cd PAF

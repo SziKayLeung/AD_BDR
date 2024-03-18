@@ -18,7 +18,7 @@
 
 # source config file and function script
 module load Miniconda2/4.3.21
-SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
+SC_ROOT=/lustre/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
 source $SC_ROOT/1_IsoSeq_Pipeline/bdr_isoseq.config
 source $SC_ROOT/1_IsoSeq_Pipeline/01_source_functions.sh
 
@@ -39,7 +39,16 @@ echo "#************************************* Isoseq3 and Post_Isoseq3 [Function 
 merging_at_refine $NAME ${ALL_SAMPLES_NAMES[@]}
 
 ## 7) run_map_cupcakecollapse <output_name> 
-run_map_cupcakecollapse $NAME 
+run_map_cupcakecollapse $NAME
+
+# create bam file 
+alignedDir=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/A_IsoSeq/6_minimap/Individual
+source activate nanopore
+for i in ${ALL_SAMPLES_NAMES[@]}; do 
+   echo "Processing $i"
+   samtools view -bS $alignedDir/$i.clustered.hq.fasta.sam > $alignedDir/$i.clustered.hq.fasta.bam
+done
+
 
 ## 8) demux_targeted <refine_dir> <input_cluster_report> <input_tofu_readstat> <output_path_file>
 demux_targeted $NAME

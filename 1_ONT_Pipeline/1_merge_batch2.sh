@@ -10,8 +10,8 @@
 #SBATCH --ntasks-per-node=16 # specify number of processors per node
 #SBATCH --mail-type=END # send email at job completion
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
-#SBATCH --output=../Output/ONTBatch2/1_merge_batch2.o
-#SBATCH --error=../Output/ONTBatch2/1_merge_batch2.e
+#SBATCH --output=../OutputADBDR/ONTBatch2/1_merge_batch2.o
+#SBATCH --error=../OutputADBDR/ONTBatch2/1_merge_batch2.e
 
 
 # 09/03/2023: ADBDR targeted datasets Batch 3 (reran on PromethION on just 20 target AD genes)
@@ -20,7 +20,7 @@
 
 # source config file and function script
 module load Miniconda2/4.3.21
-SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
+SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
 source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
 source $SC_ROOT/1_ONT_Pipeline/01_source_functions.sh
 
