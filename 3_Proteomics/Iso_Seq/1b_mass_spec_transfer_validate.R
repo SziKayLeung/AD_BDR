@@ -31,10 +31,10 @@ suppressMessages(library("dplyr"))
 ## ---------------------------
 
 # load BDR meta file
-BDR_meta <- read.csv("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics/0_metadata/BDR_96_samples_proteomics_meta.csv")
+BDR_meta <- read.csv("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics/0_metadata/BDR_96_samples_proteomics_meta.csv")
 
 # load file containing names of files downloaded
-BDR_downloaded <- read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics/1_raw/ADBDR_all_files.txt")
+BDR_downloaded <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics/1_raw/ADBDR_all_files.txt")
 BDR_downloaded <- BDR_downloaded %>% mutate(ID = as.integer(word(word(V1,c(3),sep=fixed("_")),c(1),sep=fixed("."))))
 
 
@@ -64,5 +64,5 @@ Experimental_File$Biorep <- "1"
 Experimental_File$Fraction <- "1"  
 Experimental_File$Techrep <- "1"  
 
-write.table(Experimental_File,"/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/1_raw/1_proteomics_raw/ExperimentalDesign.tsv",
+write.table(Experimental_File,"/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/1_raw/1_proteomics_raw/ExperimentalDesign.tsv",
             quote=F,col.names=T,row.names=F,sep="\t")

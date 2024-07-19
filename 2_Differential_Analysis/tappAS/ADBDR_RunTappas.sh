@@ -16,14 +16,14 @@
 
 #************************************* DEFINE GLOBAL VARIABLES
 # setting names of directory outputs
-DiffAnalysis_WKD=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential
-PostIsoseq3_WKD=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq
-RNASeq_WKD=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/RNASeq
-REFERENCE=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019
+DiffAnalysis_WKD=/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential
+PostIsoseq3_WKD=/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq
+RNASeq_WKD=/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/RNASeq
+REFERENCE=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019
 RNASeq_Filtered=/lustre/projects/Research_Project-193356/Project_10202/11_fastp_trimmed
-DIFF_FUNC=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/3_Differential_Analysis
-TAPPASFUNC=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/3_Differential_Analysis
-RAWDIR=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/Raw_Data
+DIFF_FUNC=/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/IsoSeq_Tg4510/3_Differential_Analysis
+TAPPASFUNC=/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/IsoSeq_Tg4510/3_Differential_Analysis
+RAWDIR=/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/AD_BDR/Raw_Data
 
 #cd $DiffAnalysis_WKD; mkdir RNASeq_SQANTI3 TAPPAS_INPUT
 cd $DiffAnalysis_WKD/TAPPAS_INPUT; mkdir RNASeq_Expression IsoSeq_Expression
@@ -32,7 +32,7 @@ SAMPLES_NAMES=(BBN006_30024 BBN_24548 BBN002_28350 BBN_20194 BBN_24260 BBN003_30
 SAMPLE=${SAMPLES_NAMES[${SLURM_ARRAY_TASK_ID}]}
 
 # sourcing functions script and input directories
-FUNCTIONS=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/1_Transcriptome_Annotation
+FUNCTIONS=/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/AD_BDR/1_Transcriptome_Annotation
 source $FUNCTIONS/Targeted_ADBDR_Functions.sh
 
 module load Miniconda2/4.3.21
@@ -74,7 +74,7 @@ cp $RAWDIR/ADBDR_RNASeqPhenotypeTAPPAS.txt $DiffAnalysis_WKD/TAPPAS_INPUT/RNASeq
 
 ##################################################################################################
 #************************************* Run TappAS on Knight
-scp -r sl693@login.isca.ex.ac.uk:/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential/TAPPAS_INPUT/* /mnt/data1/Szi/TAPPAS_ADBDR
+scp -r sl693@login.isca.ex.ac.uk:/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential/TAPPAS_INPUT/* /mnt/data1/Szi/TAPPAS_ADBDR
 /mnt/data1/Aaron/sw/jre1.8.0_181/bin/java -jar /mnt/data1/Szi/tappAS.jar
 
 #### Tappas output

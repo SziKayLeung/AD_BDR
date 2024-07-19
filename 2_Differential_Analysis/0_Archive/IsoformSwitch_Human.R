@@ -15,7 +15,7 @@ library(IsoformSwitchAnalyzeR)
 options(scipen=999) # removal of scientific notation 
 '%ni%' <- Negate('%in%')
 
-input_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Isoseq_Paper/Human/"
+input_dir <- "/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Isoseq_Paper/Human/"
 
 ##### 1. Input #####
 ##### Input SQANTI2 classification file, and prepare counts and abundance

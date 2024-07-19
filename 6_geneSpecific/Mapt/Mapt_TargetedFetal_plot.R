@@ -1,9 +1,9 @@
 # identify human tau isoforms in mouse targeted transcriptome dataset 
-human_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/ONT/Targeted_Transcriptome/TALON_Human/Filtered"
+human_dir = "/lustre/projects/Research_Project-MRC148213/lsl693/ONT/Targeted_Transcriptome/TALON_Human/Filtered"
 human.class.files = SQANTI_class_preparation(paste0(human_dir, "/SQANTI3/ONTTargeted_filtered_talon_classification.filtered_lite_classification.txt"),"nstandard") %>% filter(associated_gene == "MAPT")
 human.abundance = read.table(paste0(human_dir, "/ONTTargeted_filtered_talon_abundance_filtered.tsv"), sep = "\t", header = T)
 human.class.files = merge(human.class.files, human.abundance, by.x = "isoform", by.y = "annot_transcript_id") 
-targeted.phenotype = read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/IsoSeq_Tg4510/Raw_Data/Targeted_Transcriptome/TargetedMouse_PhenotypeTAPPAS.txt", header = T) %>% 
+targeted.phenotype = read.table("/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/IsoSeq_Tg4510/Raw_Data/Targeted_Transcriptome/TargetedMouse_PhenotypeTAPPAS.txt", header = T) %>% 
   mutate(sampleID = paste0(word(sample, c(2), sep = fixed("."))),
          genotype = ifelse(group == "CONTROL", "WT","TG"),
          age = paste0(time,"mos")) %>% 

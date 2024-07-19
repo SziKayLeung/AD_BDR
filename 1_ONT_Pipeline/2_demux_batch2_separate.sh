@@ -2,15 +2,20 @@
 #SBATCH --export=ALL # export all environment variables to the batch job
 #SBATCH -D . # set working directory to .
 #SBATCH -p mrcq # submit to the parallel queue
-#SBATCH --time=4:00:00 # maximum walltime for the job
+#SBATCH --time=144:00:00 # maximum walltime for the job
 #SBATCH -A Research_Project-MRC148213 # research project to submit under
 #SBATCH --nodes=1 # specify number of nodes
+#SBATCH --ntasks-per-node=12 # specify number of processors per node
+#SBATCH --mem=200G # specify bytes of memory to reserve
 #SBATCH --ntasks-per-node=16 # specify number of processors per node
 #SBATCH --mail-type=END # send email at job completion
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
+#SBATCH --output=../OutputADBDR/ONTBatch2/2log/2_demux_batch2.o
+#SBATCH --error=../OutputADBDR/ONTBatch2/2log/2_demux_batch2.e
 
 
-# Batch2: realign with pbmm2 align and filter alignment 
+# 09/01/2023: ADBDR targeted datasets Batch 2
+# 11054 fastq files in RAW_FASTQ_3 dir
 
 ##-------------------------------------------------------------------------
 
@@ -20,20 +25,21 @@ SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
 source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
 source $SC_ROOT/1_ONT_Pipeline/01_source_functions.sh
 
-fasta=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/D_ONT/4_tclean/Batch1/BC01/BC01_clean.fa
-sample=$(basename ${fasta} | cut -d "_" -f 1)
-dir=${WKD_ROOT}/5_cupcake/5_align/Batch1/
-
 
 ##-------------------------------------------------------------------------
 
-# align
-echo "Aligning ${sample}: ${fasta} ..."
-echo "Output: ${dir}/${sample}_mapped.bam"
-source activate isoseq3
-cd ${dir}
-pbmm2 align --preset ISOSEQ --sort ${GENOME_FASTA} ${fasta} ${sample}_mapped.bam --log-level TRACE --log-file ${sample}_mapped.log
+raw_fastq3_files=($(ls ${RAW_FASTQ_3}/*fastq.gz))
+#echo "${#raw_fastq3_files[@]}"
 
-# filter_alignment <input_name> <input_mapped_dir>
-# output = ${sample}_mapped.filtered.bam, ${sample}_mapped.filtered.sorted.bam
-filter_alignment ${sample}_mapped ${dir}
+for SLURM_ARRAY_TASK_ID in {0..11053}; do 
+
+echo $SLURM_ARRAY_TASK_ID
+SamplePath=${raw_fastq3_files[${SLURM_ARRAY_TASK_ID}]}
+Sample=$(basename ${SamplePath} .fastq.gz)
+
+echo "Processing ${Sample}"
+
+# 3) run_porechop <raw.fastq.gz> <output_dir>
+run_porechop ${SamplePath} ${WKD_ROOT}/1_demultiplex/Batch2/${Sample} > ${WKD_ROOT}/1_demultiplex/Batch2/log/${Sample}.log
+
+done

@@ -19,7 +19,7 @@
 module load Miniconda2
 
 source activate lrp
-source /gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/General/4_Proteogenomics/1_proteogenomics_functions.sh
+source /lustre/projects/Research_Project-MRC148213/lsl693/scripts/General/4_Proteogenomics/1_proteogenomics_functions.sh
 source /lustre/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR/3_Proteomics/2a_bdr_proteomics.config
 
 # run minimap2

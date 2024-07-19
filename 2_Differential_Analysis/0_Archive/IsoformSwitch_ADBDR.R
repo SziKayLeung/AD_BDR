@@ -18,7 +18,7 @@ library(IsoformSwitchAnalyzeR)
 options(scipen=999) # removal of scientific notation 
 '%ni%' <- Negate('%in%')
 
-input_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR"
+input_dir <- "/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR"
 
 ##### 1. Input #####
 ##### Input SQANTI2 classification file, and prepare counts and abundance
@@ -57,7 +57,7 @@ abundance[2:length(abundance)] <- sapply(abundance[2:length(abundance)],as.numer
 ##### 2. ImportData #####
 ##### ImportData into IsoformSwitchAnalyzeR
 # design dataframe input for IsoformSwitchAnalyzeR
-pheno <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/Raw_Data/ADBDR_Phenotype.csv"
+pheno <- "/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/AD_BDR/Raw_Data/ADBDR_Phenotype.csv"
 myDesign <- read.csv(pheno, header = T)
 
 

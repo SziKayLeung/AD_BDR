@@ -16,8 +16,8 @@
 
 # source config file and function script
 module load Miniconda2/4.3.21
-SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
-LOGEN_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen
+SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
+LOGEN_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/LOGen
 source $SC_ROOT/1c_Merged_Pipeline/bdr_iso_ont.config
 source $SC_ROOT/1_ONT_Pipeline/01_source_functions.sh
 export PATH=$PATH:${LOGEN_ROOT}/assist_ont_processing

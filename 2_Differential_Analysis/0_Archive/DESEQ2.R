@@ -11,7 +11,7 @@ library("vsn")
 library("pheatmap")
 library("gplots")
 
-input_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR"
+input_dir <- "/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR"
 # Read in SQANTI2 classification file of all merged data
 class <- read.table(paste0(input_dir,"/Post_IsoSeq/SQANTI_TAMA_FILTER/AllBDRTargeted_sqantitamafiltered.classification.txt"),header=T, as.is = T, sep = "\t")
 
@@ -23,7 +23,7 @@ countdata <- as.matrix(countdata)
 
 # Make DESeq dataset
 (coldata <- data.frame(row.names=colnames(countdata), condition))
-pheno <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/Raw_Data/ADBDR_Phenotype.csv"
+pheno <- "/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/AD_BDR/Raw_Data/ADBDR_Phenotype.csv"
 coldata  <- read.csv(pheno, header = T) %>% `colnames<-`(c("", "condition","Age","Sex"))
 coldata$condition <- relevel(coldata $condition, ref = "Control")
 dds <- DESeqDataSetFromMatrix(countData=countdata, colData=coldata, design=~condition + Age + Sex)
@@ -169,7 +169,7 @@ volcanoplot <- function (res, lfcthresh=2, sigthresh=0.05, xlab="log2(Fold Chang
 }
 volcanoplot(resdata, lfcthresh=2, sigthresh=0.05, legendpos="none")
 
-mm10_reference_file <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/gencode.vM22_gene_annotation_table.txt"
+mm10_reference_file <- "/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/gencode.vM22_gene_annotation_table.txt"
 mm10_reference <- read.table(mm10_reference_file,as.is = T, header=T, sep = "\t")
 DTU <- merge(DTU, mm10_reference[c("gene_id","GeneSymbol")], by.x = ("associated_gene"), by.y= "gene_id", all.x = T) %>% 
   .[,c("isoform","GeneSymbol","associated_gene","associated_transcript","structural_category","subcategory",

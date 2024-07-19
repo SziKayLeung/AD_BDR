@@ -9,20 +9,20 @@
 #SBATCH --mail-type=END # send email at job completion
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
 
-gencode_gtf=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/gencode.v40.annotation.gtf
-gencode_fa=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/mm10.fa
-gencode_transcript_fasta=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/gencode.v38.transcripts.fa
-gencode_translation_fasta=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/gencode.v38.pc_translations.fa
-hexamer=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/CPAT/Human_Hexamer.tsv
-logit_model=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/CPAT/Human_logitModel.RData
-classification=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite_classification.txt
-sqanti_fasta=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite.fasta
-sqanti_gtf=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite.gtf
-metamorpheus_toml=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/Task1SearchTaskconfig_orf.toml
-meta_rescue_toml=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/Task1SearchTaskconfig_rescue_resolve.toml
-mass_spec=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics_Rawdata
-uniprot_fasta=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/reference_2019/Homo_sapiens.GRCh38.pep.all.fa
-WKD=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics
+gencode_gtf=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/gencode.v40.annotation.gtf
+gencode_fa=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/mm10.fa
+gencode_transcript_fasta=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/gencode.v38.transcripts.fa
+gencode_translation_fasta=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/gencode.v38.pc_translations.fa
+hexamer=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/CPAT/Human_Hexamer.tsv
+logit_model=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/CPAT/Human_logitModel.RData
+classification=/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite_classification.txt
+sqanti_fasta=/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite.fasta
+sqanti_gtf=/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite.gtf
+metamorpheus_toml=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/Task1SearchTaskconfig_orf.toml
+meta_rescue_toml=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/Task1SearchTaskconfig_rescue_resolve.toml
+mass_spec=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics_Rawdata
+uniprot_fasta=/lustre/projects/Research_Project-MRC148213/lsl693/reference_2019/Homo_sapiens.GRCh38.pep.all.fa
+WKD=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics
 name=ADBDR
 coding_score_cutoff=0.0
 min_junctions_after_stop_codon=2
@@ -43,7 +43,7 @@ run_metamorpheus(){
   output_name=$4
 
   echo "Processing $input_fasta"
-  meta_dir=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/softwares/MetaMorpheus/
+  meta_dir=/lustre/projects/Research_Project-MRC148213/lsl693/softwares/MetaMorpheus/
   protein_data=$(for i in $protein_dir/*raw*; do echo $i; done)
   echo $protein_data
 
@@ -54,8 +54,8 @@ run_metamorpheus(){
   mv $output_name"_search_results"/Task1SearchTask/AllQuantifiedProteinGroups.tsv $output_name"_search_results"/Task1SearchTask/AllQuantifiedProteinGroups.$output_name".filtered.tsv"  
 }
 
-protein_wkd=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics 
-protein_dir=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics_Rawdata
+protein_wkd=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics 
+protein_dir=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics_Rawdata
 cd $protein_wkd; mkdir -p All 
 #run_metamorpheus $protein_wkd/$name".filtered_protein.fasta" $protein_dir $protein_wkd/All $name"_filtered"
 #run_metamorpheus $protein_wkd/$name".protein_refined.fasta" $protein_dir $protein_wkd/All $name"_refined"

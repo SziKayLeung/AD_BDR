@@ -4,7 +4,7 @@ library(DRIMSeq)
 library(DEXSeq)
 
 
-input_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR"
+input_dir <- "/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR"
 # Read in SQANTI2 classification file of all merged data
 class <- read.table(paste0(input_dir,"/Post_IsoSeq/SQANTI_TAMA_FILTER/AllBDRTargeted_sqantitamafiltered.classification.txt"),header=T, as.is = T, sep = "\t")
 
@@ -14,7 +14,7 @@ class <- class %>% filter(toupper(associated_gene) %in% TargetGene)
 
 
 # phenotype dataset 
-pheno <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/Raw_Data/ADBDR_Phenotype.csv"
+pheno <- "/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/AD_BDR/Raw_Data/ADBDR_Phenotype.csv"
 coldata  <- read.csv(pheno, header = T) %>% `colnames<-`(c("sample_id", "condition","Age","Sex"))
 samps <- coldata
 samps$condition <- factor(samps$condition)
@@ -28,7 +28,7 @@ colnames(counts)[1] <- "feature_id"
 colnames(counts)[2] <- "gene_id"
 
 counts  <- class %>% dplyr::select(isoform,starts_with("FL.")) 
-write.table(counts, "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/TAPPAS/counts.txt", quote = F, row.names = F,sep = "\t")
+write.table(counts, "/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/TAPPAS/counts.txt", quote = F, row.names = F,sep = "\t")
 
 d <- dmDSdata(counts=counts, samples=samps)
 trs_cts <- counts(d)
@@ -62,7 +62,7 @@ dxr.g <- dxr.g[order(dxr.g$qval),]
 dxr_out <- as.data.frame(dxr[,c("featureID", "groupID", "pvalue")])
 dxr_out <- dxr_out[order(dxr$pvalue),]
 
-output_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential"
+output_dir <- "/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential"
 write.table(dxr.g, file=paste0(output_dir,"/results_dtu_gene.tsv"), sep="\t")
 write.table(dxr_out, file=paste0(output_dir,"/results_dtu_transcript.tsv"), sep="\t")
 

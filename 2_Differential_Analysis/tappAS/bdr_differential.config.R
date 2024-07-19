@@ -16,14 +16,14 @@
 ##
 
 
-output_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/01_figures_tables"
+output_dir = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/01_figures_tables"
 
 ## ---------- TappAS input files -----------------
 
 # input directory
-WKD_ROOT = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Differential/TAPPAS_OUTPUT/"
-TAPPAS_PHENOTYPE_DIR = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/0_metadata/"
-METADATA_DIR = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/0_metadata/"
+WKD_ROOT = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Differential/TAPPAS_OUTPUT/"
+TAPPAS_PHENOTYPE_DIR = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/0_metadata/"
+METADATA_DIR = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/0_metadata/"
 TargetGene <- read.table(paste0(METADATA_DIR, "A_IsoSeq/TargetGenes.tsv"))[["V1"]]
 
 # output files from running tappAS
@@ -55,8 +55,8 @@ phenotype <- lapply(TAPPAS_PHENOTYPE, function(x) read.table(x, header = T))
 
 ## ---------- SQANTI classification files -----------------
 
-ISOSEQ_WKD_ROOT="/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/A_IsoSeq/"
-ONT_WKD_ROOT="/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/D_ONT/"
+ISOSEQ_WKD_ROOT="/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/"
+ONT_WKD_ROOT="/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/D_ONT/"
 
 # Classification file
 class.names.files <- list(
@@ -79,7 +79,7 @@ colnames(FL_reads)[-1] <- paste0("FL.",colnames(FL_reads)[-1])
 
 
 # all TPM, no filtering of isoforms
-#TPM <- read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential/TAPPAS_OUTPUT/IsoSeq_Expression_nonfiltered/InputData/input_normalized_matrix.tsv") %>% rownames_to_column(var = "isoform")
+#TPM <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential/TAPPAS_OUTPUT/IsoSeq_Expression_nonfiltered/InputData/input_normalized_matrix.tsv") %>% rownames_to_column(var = "isoform")
 
 metapheno <- read.csv(paste0(METADATA_DIR, "/96_samples_all_v2_singletab.csv"))
 metapheno$BBN.ID <- gsub(".", "_", metapheno$BBN.ID, fixed=TRUE)

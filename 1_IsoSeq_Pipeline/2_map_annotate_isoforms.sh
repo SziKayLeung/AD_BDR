@@ -42,7 +42,7 @@ merging_at_refine $NAME ${ALL_SAMPLES_NAMES[@]}
 run_map_cupcakecollapse $NAME
 
 # create bam file 
-alignedDir=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/A_IsoSeq/6_minimap/Individual
+alignedDir=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/6_minimap/Individual
 source activate nanopore
 for i in ${ALL_SAMPLES_NAMES[@]}; do 
    echo "Processing $i"

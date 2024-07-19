@@ -1,12 +1,12 @@
 library(matrixStats)
 
-cd /gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Human_Mapt
+cd /lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Human_Mapt
 
-export PATH=$PATH:/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/softwares/gffcompare
+export PATH=$PATH:/lustre/projects/Research_Project-MRC148213/lsl693/softwares/gffcompare
 
 Fetal_Targeted="/gpfs/mrc0/projects/Research_Project-MRC148213/Rosie/Targeted/P0052_20220421_10661/Pool1/20220421_1656_1F_PAI87431_1fc2cdd3/P0052_analysis/Targeted_SQANTI3/Targeted_SQANTI3_classification.filtered_lite.gtf"
 
-BDR_Targeted="/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite.gtf"
+BDR_Targeted="/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite.gtf"
 
 cp $Fetal_Targeted .
 cp $BDR_Targeted . 
@@ -16,12 +16,12 @@ gffcompare -r AllBDRTargeted.collapsed_classification.filtered_lite.gtf Targeted
 
 
 #### R
-tmap = read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Human_Mapt/BDRFetalTargeted.Targeted_SQANTI3_classification.filtered_lite.gtf.tmap", header= T)
+tmap = read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Human_Mapt/BDRFetalTargeted.Targeted_SQANTI3_classification.filtered_lite.gtf.tmap", header= T)
 
 tmap_exact <- tmap[tmap$class_code == "=",]
 tmap_exact_mapt <- tmap[tmap$qry_gene_id == "ENSG00000186868.17",]
 
-BDR_class <- read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite_classification.txt", header = T)
+BDR_class <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Post_IsoSeq/SQANTI3/AllBDRTargeted.collapsed_classification.filtered_lite_classification.txt", header = T)
 
 BDR_class$associated_transcript <- as.character(BDR_class$associated_transcript)
 BDR_class["associated_transcript"][BDR_class["isoform"] == "PB.4515.63"] <- "ENST00000535772.6"

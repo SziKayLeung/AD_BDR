@@ -50,7 +50,7 @@ cp $RAWDIR/ADBDR_RNASeqPhenotypeTAPPAS.txt $DiffAnalysis_WKD/TAPPAS_INPUT/RNASeq
 
 ##################################################################################################
 #************************************* Run TappAS on Knight
-scp -r sl693@login.isca.ex.ac.uk:/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential/TAPPAS_INPUT/* /mnt/data1/Szi/TAPPAS_ADBDR
+scp -r sl693@login.isca.ex.ac.uk:/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential/TAPPAS_INPUT/* /mnt/data1/Szi/TAPPAS_ADBDR
 /mnt/data1/Aaron/sw/jre1.8.0_181/bin/java -jar /mnt/data1/Szi/tappAS.jar
 
 #### Tappas output

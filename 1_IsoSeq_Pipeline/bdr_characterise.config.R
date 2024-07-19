@@ -18,9 +18,9 @@
 
 ## ---------- Directory and input files -----------------
 
-WKD_ROOT="/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/A_IsoSeq"
+WKD_ROOT="/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq"
 
-METADATA_DIR <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/0_metadata/A_IsoSeq"
+METADATA_DIR <- "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/0_metadata/A_IsoSeq"
 TargetGene <- read.table(paste0(METADATA_DIR, "/TargetGenes.tsv"))[["V1"]]
 targetedpheno <- read.csv(paste0(METADATA_DIR, "/Targeted_Sample_Demographics.csv")) 
 probes <- read.table(paste0(METADATA_DIR,"/Probes/FINAL_HUMAN.bed")) %>% mutate(gene = word(V4,c(3),sep=fixed("_")))
@@ -52,12 +52,12 @@ Control_targeted = subset_class_phenotype(targeted.class.files,targetedpheno,"Co
 
 ### RNA-Seq gene level counts (STAR followed by RSEM - Darren Project 10202)
 # Adapt file to only include target genes and in a format compatible for downstream python script 
-Rnaseq_gene_counts = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/B_RNASeq/genes_TPM_matrix.txt"
+Rnaseq_gene_counts = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/B_RNASeq/genes_TPM_matrix.txt"
 
 
 ## ---------- Target Rate -----------------
 
-targetrate_input_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/A_IsoSeq/6b_target_rate"
+targetrate_input_dir = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/6b_target_rate"
 Probes_input <- list.files(path = paste0(WKD_ROOT, "/6b_target_rate"), pattern = "fasta.sam.probe_hit.txt", full.names = T)
 Probes_files <- lapply(Probes_input, function(x) read.table(x, header=T, as.is=T, sep="\t"))
 names(Probes_files) <- list.files(path = paste0(WKD_ROOT, "/6b_target_rate"), pattern = "fasta.sam.probe_hit.txt")
@@ -65,5 +65,5 @@ names(Probes_files) <- list.files(path = paste0(WKD_ROOT, "/6b_target_rate"), pa
 
 ##-------------------------------------------------------------------------
 
-anno_dir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/A_IsoSeq/10_characterise/TargetGenes"
+anno_dir = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/10_characterise/TargetGenes"
 

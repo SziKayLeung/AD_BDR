@@ -11,7 +11,7 @@
 ## ------------ packages ------------
 
 SC_ROOT = "/lustre/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR"
-LOGEN <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen/"
+LOGEN <- "/lustre/projects/Research_Project-MRC148213/lsl693/scripts/LOGen/"
 source(paste0(LOGEN, "aesthetics_basics_plots/pthemes.R"))
 source(paste0(LOGEN, "transcriptome_stats/read_sq_classification.R"))
 source(paste0(LOGEN, "transcriptome_stats/plot_basic_stats.R"))
@@ -20,9 +20,9 @@ source(paste0(LOGEN, "merge_characterise_dataset/run_ggtranscript.R"))
 
 ## ------------ directory paths ------------
 
-root_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/"
+root_dir <- "/lustre/projects/Research_Project-MRC148213/lsl693/"
 dirnames <- list(
-  root = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/C_Proteomics/",
+  root = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/C_Proteomics/",
   targ_iso_metadata = paste0(root_dir,"AD_BDR/0_metadata/A_IsoSeq/"),
   targ_ont_metadata = paste0(root_dir,"AD_BDR/0_metadata/B_ONT/"),
   targ_ont_root = paste0(root_dir, "AD_BDR/D_ONT/5_cupcake/")

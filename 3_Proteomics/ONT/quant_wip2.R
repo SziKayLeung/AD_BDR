@@ -1,4 +1,4 @@
-protein_tsv = read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics/ADBDR.sqanti_protein_classification.tsv", sep = "\t", header = T)
+protein_tsv = read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics/ADBDR.sqanti_protein_classification.tsv", sep = "\t", header = T)
 
 protein_tsv = merge(targeted.class.files[,c("isoform","associated_gene")], protein_tsv,by.x = "isoform",by.y="pb")
 
@@ -34,7 +34,7 @@ reshape::melt(output) %>% filter(variable %in% c("total_num_transcripts","total_
   labs(x = "Target Gene", y = "Number") + 
   scale_fill_discrete(name = "Category", labels = c("Transcripts","Coding Transcripts","Protein")) 
 
-peptides <- read.table("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics/ADBDR_refined_peptides.bed12", header = F, sep = "\t")
+peptides <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics/ADBDR_refined_peptides.bed12", header = F, sep = "\t")
 peptide_tally <- peptides %>% mutate(gene = word(word(V4, c(2), sep = fixed("(")), c(1), sep = fixed(")"))) %>% 
   group_by(gene) %>% tally()
 View(peptide_tally)

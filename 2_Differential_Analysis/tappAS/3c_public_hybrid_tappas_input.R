@@ -22,7 +22,7 @@ suppressMessages(library(dplyr))
 
 ## ---------- Directory  -----------------
 
-WKD_DIR = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/"
+WKD_DIR = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/"
 TAPPAS_INPUT_DIR = paste0(WKD_DIR, "TAPPAS_INPUT/Large_RNASeq_Expression/")
 
 Expression_input <- list(

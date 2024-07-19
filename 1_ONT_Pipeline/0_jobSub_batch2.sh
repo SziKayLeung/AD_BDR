@@ -13,7 +13,7 @@
 
 ##-------------------------------------------------------------------------
 
-SC=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR/1_ONT_Pipeline
+SC=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR/1_ONT_Pipeline
 
 # command line - create folders
 #bash ${SC}/0_create_folder_batch2.sh

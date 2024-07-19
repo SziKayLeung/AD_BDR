@@ -22,7 +22,7 @@
 
 # source config file and function script
 module load Miniconda2/4.3.21
-export SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
+export SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
 source $SC_ROOT/2_Differential_Analysis/bdr_differential.config
 source activate sqanti2_py3
 

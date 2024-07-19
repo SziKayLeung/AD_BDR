@@ -47,8 +47,8 @@ suppressMessages(loadfonts())
 ## ----------Functions-----------------
 
 # load all the functions
-source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/General/5_TappAS_Differential/characterise/plot_tappas_analysis.R")
-source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/General/5_TappAS_Differential/characterise/sqanti_general.R")
+source("/lustre/projects/Research_Project-MRC148213/lsl693/scripts/General/5_TappAS_Differential/characterise/plot_tappas_analysis.R")
+source("/lustre/projects/Research_Project-MRC148213/lsl693/scripts/General/5_TappAS_Differential/characterise/sqanti_general.R")
 
 
 ## ----------Plot colours-----------------

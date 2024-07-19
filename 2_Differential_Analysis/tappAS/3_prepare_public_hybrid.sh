@@ -20,7 +20,7 @@
 
 # source config file and function script
 module load Miniconda2/4.3.21
-export SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
+export SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
 
 
 ##-------------------------------------------------------------------------

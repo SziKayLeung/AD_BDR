@@ -18,7 +18,7 @@
 # source config file and function script
 module load Miniconda2/4.3.21
 
-SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
+SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
 source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
 
 FICLE_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/FICLE/
@@ -108,13 +108,12 @@ for g in ${TGENES[@]}; do
   mkdir -p ${dir}/8_characterise/TargetGenes/Log
   output_dir=${dir}/8_characterise/TargetGenes
   
-  ficle.py --gene=$g \
-  --ref=${dir}/8_characterise/TargetGenesRef/ \
-  --i_bed=${dir}/8_characterise/bed12Files/${samplename}_concat_counts_coloured.bed12 \
-  --i_gtf=${dir}/7_sqanti3/${samplename}_collapsed.filtered_counts_filtered.gtf \
-  --i_class=${dir}/7_sqanti3/${samplename}_collapsed_RulesFilter_result_classification.targetgenes_counts_filtered.txt \
-  --orf=${dir}/8_characterise/CPAT/${samplename}.ORF_prob.best.tsv   \
-  --o_dir=$output_dir &> ${dir}/8_characterise/TargetGenes/Log/$g"_characterise.log"
+  ficle.py --genename=$g \
+  --reference=${GENOME_GTF} \
+  --input_gtf=${dir}/7_sqanti3/${samplename}_collapsed.filtered_counts_filtered.gtf \
+  --input_class=${dir}/7_sqanti3/${samplename}_collapsed_RulesFilter_result_classification.targetgenes_counts_filtered.txt \
+  --cpat=${dir}/8_characterise/CPAT/${samplename}.ORF_prob.best.tsv   \
+  --output_dir=$output_dir &> ${dir}/8_characterise/TargetGenes/Log/$g"_characterise.log"
 
 done
 

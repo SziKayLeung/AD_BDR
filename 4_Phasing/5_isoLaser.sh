@@ -3,7 +3,7 @@ SQANTI=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/9_sqan
 SQANTIGTF=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/9_sqanti3/basic/AllBDRTargeted.collapsed_classification.filtered_lite.gtf
 SQANTICLASSFILE=/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/9_sqanti3/basic/AllBDRTargeted.collapsed_classification.filtered_lite_classification.txt
 
-export REFERENCE=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/references
+export REFERENCE=/lustre/projects/Research_Project-MRC148213/lsl693/references
 export GENOME_FASTA=$REFERENCE/human/hg38.fa
 export GENOME_GTF=$REFERENCE/annotation/gencode.v40.annotation.gtf
 export PATH=$PATH:/lustre/projects/Research_Project-MRC148213/lsl693/scripts/LOGen/miscellaneous

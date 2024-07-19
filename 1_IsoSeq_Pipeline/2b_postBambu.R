@@ -1,6 +1,6 @@
 library("stringr")
 
-dat <- data.table::fread("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/A_IsoSeq/7_bambu/CPM_transcript.txt")
+dat <- data.table::fread("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/7_bambu/CPM_transcript.txt")
 
 # Specify the list of gene symbols
 gene_table <- data.frame(

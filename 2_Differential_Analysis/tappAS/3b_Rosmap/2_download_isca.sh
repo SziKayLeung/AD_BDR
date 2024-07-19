@@ -14,9 +14,9 @@
 # 22/06/2022: Download ROSMAP RNA-Seq dataset (4Tb)
 
 #************************************* DEFINE GLOBAL VARIABLES
-DiffAnalysis_WKD=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential
+DiffAnalysis_WKD=/lustre/projects/Research_Project-MRC148213/lsl693/IsoSeq/Targeted_Transcriptome/ADBDR/Differential
 #RNASeq_DIR=/gpfs/mrc0/projects/Research_Project-MRC148213/ROSMAP/RNASeq
-FUNCTIONS=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/2_Differential_Analysis/ROSMAP
+FUNCTIONS=/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/AD_BDR/2_Differential_Analysis/ROSMAP
 RNASeq_DIR=/lustre/projects/Research_Project-MRC190311/ROSMAP/RNASeq
 
 #************************************* DEFINE LOCAL VARIABLES

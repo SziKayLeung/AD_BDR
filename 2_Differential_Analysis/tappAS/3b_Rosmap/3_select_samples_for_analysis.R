@@ -7,7 +7,7 @@ suppressMessages(library("dplyr"))
 suppressMessages(library("stringr"))
 
 # load files 
-metadir = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/Scripts/AD_BDR/2_Differential_Analysis/ROSMAP/Metadata/"
+metadir = "/lustre/projects/Research_Project-MRC148213/lsl693/Scripts/AD_BDR/2_Differential_Analysis/ROSMAP/Metadata/"
 final_merged <- read.csv(final_merged,paste0(metadir, "/synapseid_phenotype.csv"), quote=F)
 
 # Samples that are already downloaded

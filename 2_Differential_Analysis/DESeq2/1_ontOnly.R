@@ -25,7 +25,7 @@ suppressMessages(library("RColorBrewer"))
 
 ## ---------- source functions -----------------
 
-LOGEN_ROOT = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen/"
+LOGEN_ROOT = "/lustre/projects/Research_Project-MRC148213/lsl693/scripts/LOGen/"
 source(paste0(LOGEN_ROOT, "/transcriptome_stats/read_sq_classification.R"))
 source(paste0(LOGEN_ROOT, "differential_analysis/run_DESeq2.R"))
 source(paste0(LOGEN_ROOT, "aesthetics_basics_plots/pthemes.R"))
@@ -40,8 +40,8 @@ label_group <- function(genotype){
 
 # directory names
 dirnames <- list(
-  bdr = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/",
-  output = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/01_figures_tables/"
+  bdr = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/",
+  output = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/01_figures_tables/"
 )
 
 # read input files

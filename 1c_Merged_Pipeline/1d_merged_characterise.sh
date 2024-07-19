@@ -18,11 +18,11 @@
 # source config file and function script
 module load Miniconda2/4.3.21
 
-SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
-source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
+SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
+source $SC_ROOT/1c_Merged_Pipeline/bdr_iso_ont.config
 
-FICLE_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/FICLE/
-LOGEN_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen
+FICLE_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/FICLE/
+LOGEN_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/LOGen
 export PATH=$PATH:${LOGEN_ROOT}/compare_datasets
 export PATH=$PATH:${LOGEN_ROOT}/target_gene_annotation
 export PATH=$PATH:${LOGEN_ROOT}/merge_characterise_dataset
@@ -75,18 +75,18 @@ classify_reads_bydataset.py -a=${dir}/6_collapse/demux_fl_count.csv -p=${GRPPHEN
 # colour_by_abundance <sample> <input_gtf> <abundance_file> <root_dir> <species>
 colour_by_abundance ${samplename} \
 ${dir}/3_sqanti3/${samplename}"_collapsed.filtered_counts_filtered.gtf" \
-${dir}/6_collapse/demux_fl_count_classified.csv ${dir}/4_characterise human
+${dir}/2_collapse/demux_fl_count.csv ${dir}/4_characterise human
 
 # colour_by_abundance <sample> <input_gtf> <abundance_file> <root_dir> <species>
 # convert gtf to bed12
-mkdir -p $4/bed12Files
+mkdir -p ${dir}/4_characterise/bed12Files
 convert_gtf_bed12 ${dir}/3_sqanti3/${samplename}"_collapsed.filtered_counts_filtered.gtf"
 
 colour_transcripts_by_countandpotential.py \
 --bed ${dir}/3_sqanti3/${samplename}"_collapsed.filtered_counts_filtered_sorted.bed12" \
 --cpat ${dir}/4_characterise/CPAT/${samplename}".ORF_prob.best.tsv" \
 --noORF ${dir}/4_characterise/CPAT/${samplename}".no_ORF.txt" \
---a ${dir}/6_collapse/demux_fl_count_classified.csv \
+--a ${dir}/2_collapse/demux_fl_count.csv \
 --o ${samplename} \
 --dir ${dir}/4_characterise/bed12Files/ \
 --species human
@@ -104,12 +104,9 @@ source activate sqanti2_py3
 for g in ${TGENES[@]}; do
 
   echo $g
-  mkdir -p ${dir}/4_characterise/TargetGenes
-  mkdir -p ${dir}/4_characterise/TargetGenes/Log
-  output_dir=${dir}/4_characterise/TargetGenes
   
-  ficle.py ---genename=$g \
-  --reference=${dir}/4_characterise/TargetGenesRef/ \
+  ficle.py --genename=$g \
+  --reference=${GENOME_GTF} \
   --input_bed=${dir}/4_characterise/bed12Files/${samplename}_concat_counts_coloured.bed12 \
   --input_gtf=${dir}/3_sqanti3/${samplename}_collapsed.filtered_counts_filtered.gtf \
   --input_class=${dir}/3_sqanti3/${samplename}_collapsed_RulesFilter_result_classification.targetgenes_counts_filtered.txt \

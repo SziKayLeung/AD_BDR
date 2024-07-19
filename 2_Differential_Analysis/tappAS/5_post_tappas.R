@@ -17,10 +17,10 @@
 
 ## ---------- Source function and config files -----------------
 
-OUTPUT_DIR = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/01_figures_tables"
+OUTPUT_DIR = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/01_figures_tables"
 
-source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR/2_Differential_Analysis/02_source_differential_functions.R")
-source("/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR/2_Differential_Analysis/bdr_differential.config.R")
+source("/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR/2_Differential_Analysis/02_source_differential_functions.R")
+source("/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR/2_Differential_Analysis/bdr_differential.config.R")
 
 
 ## ---------- Load tappAS files -----------------

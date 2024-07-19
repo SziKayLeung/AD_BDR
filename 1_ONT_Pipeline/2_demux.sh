@@ -24,7 +24,7 @@
 
 # source config file and function script
 module load Miniconda2/4.3.21
-SC_ROOT=/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/AD_BDR
+SC_ROOT=/lustre/projects/Research_Project-MRC148213/lsl693/scripts/AD_BDR
 source $SC_ROOT/1_ONT_Pipeline/bdr_ont.config
 source $SC_ROOT/1_ONT_Pipeline/01_source_functions.sh
 

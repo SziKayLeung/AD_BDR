@@ -13,7 +13,7 @@
 
 # 01/08/2022: Transferred raw mass-spectrometry data for remaining 69 core AD-BDR samples (from filesender)
 
-cd /gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/Proteomics/1b_raw_remaining
+cd /lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/Proteomics/1b_raw_remaining
 
 wget "https://filesender.surf.nl/download.php?token=f391b59f-47e8-45de-b742-db6d99fcf6ef&files_ids=8690022" -O 20210108_AD_2.raw
 wget "https://filesender.surf.nl/download.php?token=f391b59f-47e8-45de-b742-db6d99fcf6ef&files_ids=8690024" -O 20210108_AD_13.raw

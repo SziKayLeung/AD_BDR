@@ -5,3 +5,7 @@
 *.e*
 *.o*
 Figures_Thesis/*
+*tar*
+*transfer*
+*upload*
+*SRA*
