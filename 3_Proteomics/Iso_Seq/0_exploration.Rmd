@@ -1,0 +1,210 @@
+---
+title: "Protein exploration"
+author: "Szi Kay Leung"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+suppressMessages({
+  library("data.table")
+  library("dplyr")
+  library("tidyr")
+  library("stringr")
+  library('biomaRt')
+  library('ggplot2')
+  library("cowplot")})
+
+```
+
+# Aim 
+
+Explore the number of predicted protein isoforms in long-read dataset (Iso-Seq AD-BDR)  
+Targeted dataset across 20 target genes 
+
+
+```{r input}
+
+## ---- packages -----
+LOGEN <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/scripts/LOGen/"
+source(paste0(LOGEN, "aesthetics_basics_plots/pthemes.R"))
+source(paste0(LOGEN, "transcriptome_stats/read_sq_classification.R"))
+source(paste0(LOGEN, "transcriptome_stats/plot_basic_stats.R"))
+source(paste0(LOGEN, "merge_characterise_dataset/run_ggtranscript.R"))
+
+## ---- directory paths ----
+root_dir <- "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/"
+dirnames <- list(
+  root = "/gpfs/mrc0/projects/Research_Project-MRC148213/sl693/AD_BDR/C_Proteomics/",
+  targ_iso_metadata = paste0(root_dir,"AD_BDR/0_metadata/A_IsoSeq/"),
+  targ_ont_metadata = paste0(root_dir,"AD_BDR/0_metadata/B_ONT/"),
+  targ_ont_root = paste0(root_dir, "AD_BDR/D_ONT/5_cupcake/")
+)
+
+input <- list(
+  t.class.files = SQANTI_class_preparation(paste0(dirnames$root,"2_longread_processed/AllBDRTargeted.collapsed_classification.filtered_lite_classification.txt"),"ns"),
+  pUnfiltered.class.files = pSQANTI_class_preparation(paste0(dirnames$root,"7_classified_protein/ADBDR_unfiltered.protein_classification.tsv")),
+  pFiltered.class.files = pSQANTI_class_preparation(paste0(dirnames$root,"7_classified_protein/ADBDR.sqanti_protein_classification.tsv")),
+  t2p.collapse = fread(paste0(dirnames$root,"6_refined_database/ADBDR_orf_refined.tsv")),
+  peptide_orf = paste0(dirnames$root, "5_calledOrfs/ADBDR.gtf"),
+  cpat_output = fread(paste0(dirnames$root,"5_calledOrfs/ADBDR.ORF_prob.best.tsv")),
+  no_cpat_orf = fread(paste0(dirnames$root, "5_calledOrfs/ADBDR.no_ORF.txt"),header = F)
+)
+
+TargetGene <- toupper(c("Abca1","Sorl1","Mapt","Bin1","Tardbp","App","Abca7",
+                "Ptk2b","Ank1","Fyn","Clu","Cd33","Fus","Picalm","Snca","Apoe","Trpa1","Rhbdf2","Trem2","Vgf"))
+
+# filter by targeted 
+input <- list(
+  t.class.files = input$t.class.files[which(associated_gene%in%TargetGene)],
+  pUnfiltered.class.files = input$pUnfiltered.class.files[which(tx_gene%in%TargetGene)],
+  pFiltered.class.files = input$pFiltered.class.files[which(tx_genename%in%TargetGene)],
+  t2p.collapse = input$t2p.collapse %>% filter(gene%in%TargetGene),
+  peptide_orf = as.data.frame(rtracklayer::import(input$peptide_orf)),
+  cpat_output = input$cpat_output,
+  no_coat_orf = input$no_cpat_orf
+) 
+
+input$gtf <- as.data.frame(rtracklayer::import(paste0(dirnames$root,"2_longread_processed/AllBDRTargeted.collapsed_classification.filtered_lite.gtf")))
+input$peptide_orf <- input$peptide_orf %>% mutate(isoform = word(transcript_id,c(1),sep=fixed("_")))
+input$merged_peptide_gtf <- rbind(input$gtf[,c("seqnames","strand","start","end","type","transcript_id","gene_id")] ,
+                         input$peptide_orf[,c("seqnames","strand","start","end","type","transcript_id","gene_id")])
+
+
+# number of RNA transcripts collapsed by protein sequence
+input$t2p.collapse <- input$t2p.collapse %>% mutate(numtxCollapsed = count.fields(textConnection(pb_accs), sep = "|"))
+char <- strsplit(as.character(input$t2p.collapse$pb_accs), '|', fixed = T)
+t2p.collapse.dissected <- data.frame(pb_accs=unlist(char), base_acc=rep(input$t2p.collapse$base_acc, sapply(char, FUN=length)))
+input$t2p.collapse <- merge(t2p.collapse.dissected,input$t2p.collapse[,c("base_acc","numtxCollapsed")])
+input$t.class.files <- merge(input$t.class.files, input$t2p.collapse, by.x = "isoform", by.y = "pb_accs")
+
+# phenotype
+phenotype <- list(
+  targ_iso = read.csv(paste0(dirnames$targ_iso_metadata, "Targeted_Sample_Demographics.csv"), header = T),
+  targ_ont = read.csv(paste0(dirnames$targ_ont_metadata, "Selected_ONTTargeted_BDR.csv"), header = T),
+  scn =  read.csv(paste0(root_dir, "AD_BDR/0_metadata/RBSCNPhenotype.csv"), header = T)
+)
+phenotype$batch_ont <- rbind(phenotype$targ_ont %>% mutate(sample = paste0("B1.",sample)),phenotype$targ_ont %>% mutate(sample = paste0("B2.",sample)))
+
+
+```
+
+## All Target genes
+
+A) RNA transcripts by structural category after SQANTI filtering
+B) RNA transcripts collapsed by protein sequencing after proteogenomics pipeline
+C) Protein isoforms annotation after proteogenomics pipeline
+
+```{r targetgenes, warning=FALSE, fig.width=18, fig.height=10}
+# note discrepancy between isoforms in pUnfiltered and pFiltered
+plot_grid(plot_structural_cate(input$t.class.files) + ylim(0, 42),
+          #plot_structural_cate(input$pUnfiltered.class.files,"pr_splice_cat"),
+          plot_structural_cate(input$t.class.files %>% filter(isoform %in% input$pFiltered.class.files$pb)) + ylim(0, 42),
+          plot_structural_cate(input$pFiltered.class.files,"pr_splice_cat") + ylim(0, 42),
+          nrow=1, labels = c("A","B","C"))
+```
+
+### Clu {.tabset .tabset-fade}
+
+```{r clu_stats}
+
+Clu_cpat <- input$cpat_output[which(seq_ID %in% input$t.class.files[which(associated_gene == "CLU")][["isoform"]])]
+Clu_protein <- Clu_cpat %>% filter(Coding_prob >= 0.364)
+Clu_nonprotein <- Clu_cpat %>% filter(Coding_prob < 0.364)
+Clu_noOrf <- input$no_cpat_orf %>% filter(V1 %in% input$t.class.files[which(associated_gene == "CLU")][["isoform"]])
+
+unique(input$t.class.files[which(associated_gene == "CLU")][["base_acc"]])
+setdiff(Clu_protein$seq_ID, input$t2p.collapse$pb_accs)
+
+```
+
+Number of associated RNA transcripts: `r nrow(input$t.class.files[which(associated_gene == "CLU")])`   
+Number of protein-coding transcripts: `r nrow(Clu_protein)`
+Number of non protein-coding transcripts: `r nrow(Clu_nonprotein)`
+Number of transcripts with no ORF: `r nrow(Clu_noOrf)`
+
+Number of RNA isoforms collapsed by protein sequence (i.e. unique protein sequence): `r length(unique(input$t.class.files[which(associated_gene == "CLU")][["base_acc"]]))`
+
+#### Table
+
+Below is a table of the frequency of RNA transcripts collapsed to RNA isoform (i.e. 87 RNA transcripts were unique and 30 RNA transcripts were collapsed to one RNA isoform based on protein sequence)
+
+```{r}
+knitr::kable(input$t.class.files %>% filter(associated_gene == "CLU") %>% group_by(base_acc) %>% tally(name = "numTxCollapsed") %>% group_by(numTxCollapsed) %>% tally())
+```
+
+#### PB.9744.2 {.tabset .tabset-fade}
+
+##### Redundant isoforms
+
+```{r pb97442}
+proteinInput$t.class.files %>% filter(base_acc == "PB.9744.2") %>% group_by(associated_transcript, structural_category, subcategory) %>% tally() %>% 
+  ggplot(., aes(x = subcategory, y = n, fill = associated_transcript)) + geom_bar(stat = "identity") + 
+  ggh4x::facet_grid2(. ~ structural_category, scales = "free_x",space = "free") + theme_classic() +
+  labs(y = "Number of RNA isoforms", title = ("PB.9744.2 - FSM: ENST00000316403.14")) + 
+  scale_y_continuous(breaks=c(1,3,5,7,10))
+
+
+```
+
+##### Tracks
+
+```{r pb97442-track, fig.width=15, fig.height=15,warning=FALSE}
+redundant_iso = proteinInput$t.class.files[proteinInput$t.class.files$base_acc == "PB.9744.2", "isoform"]
+
+IsoList <- data.frame(
+  Isoform = unlist(IsoList <- list(
+    transcript = redundant_iso,
+    protein = as.character(unique(proteinInput$peptide_orf[proteinInput$peptide_orf$isoform %in% redundant_iso,"transcript_id"]))
+  )),
+  Category = rep(names(IsoList), lengths(IsoList))
+)
+IsoList$colour <- c(rep(NA,length(IsoList$Category[IsoList$Category != "DTE"])))
+
+
+ggTranPlots(proteinInput$merged_peptide_gtf, proteinInput$t.class.files,
+                       isoList = c(as.character(IsoList$Isoform)),
+                       selfDf = IsoList, gene = "CLU")
+
+```
+
+##### Expression 
+
+```{r}
+as.data.frame(proteinInput$t.class.files) %>% dplyr::select(isoform, structural_category, starts_with("FL.")) %>% 
+  reshape2::melt(variable.name="sample",value.name="FL",id.vars = c("isoform","structural_category")) %>% 
+  filter(isoform %in% redundant_iso) %>% 
+  ggplot(., aes(x = reorder(isoform,-FL), y = log10(FL))) + geom_boxplot(outlier.shape = NA) + 
+  geom_point() + 
+  facet_grid(~structural_category, scales = "free", space = "free") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(x = "Isoform", y = "FL reads")
+
+```
+
+```{r}
+
+allReads <- input$t.class.files %>% filter(isoform %in% redundant_iso) %>% 
+  dplyr::select(isoform, starts_with("FL."))  %>% 
+  tibble::column_to_rownames(var = "isoform") %>%
+   summarise_all(sum) %>%
+  reshape2::melt(variable.name="sample",value.name="sumFLreads")
+
+
+repReads <- input$t.class.files %>% filter(isoform %in% redundant_iso) %>% dplyr::select(isoform, starts_with("FL.")) %>% 
+  filter(isoform == "PB.9744.254") %>% 
+  reshape2::melt(variable.name="sample",value.name="PB.9744.254_reads")
+
+merge(allReads, repReads,by="sample") %>% 
+  merge(., phenotype$targ_iso[,c("Phenotype","Column.ID")], by.x = "sample", by.y = "Column.ID") %>%
+  reshape2::melt(id = c("sample","isoform","Phenotype"),variable.name = "readType", value.name = "reads") %>% 
+  ggplot(.,aes(x = readType, y = reads, fill = Phenotype)) + geom_boxplot() + 
+  geom_point(aes(fill = Phenotype), size = 3, shape = 21, position = position_jitterdodge()) +
+  labs(x = "Isoform", y = "Number of Reads")
+
+```
