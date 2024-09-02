@@ -8,12 +8,13 @@
 #SBATCH --ntasks-per-node=16 # specify number of processors per node
 #SBATCH --mail-type=END # send email at job completion
 #SBATCH --mail-user=sl693@exeter.ac.uk # email address
-#SBATCH --output=2_run_proteogenomics.o
-#SBATCH --error=2_run_proteogenomics.e
+#SBATCH --output=2_run_proteogenomics_1.o
+#SBATCH --error=2_run_proteogenomics_1.e
 #SBATCH --mem=500G 
 
 # 13/06/2024: Run proteogenomics pipeline on ONT dataset (Batch 1 and Batch 2 combined)
 # 04/07/2024: Rerun metamorpheus for gencode and uniprot
+# 06/08/2024: generate peptide tracks and identify novel peptides
 
 #-----------------------------------------------------------------------#
 ## print start date and time
@@ -43,15 +44,15 @@ echo "#************************************* Run Metamorpheus"
 ##run_metamorpheus refined
 ##run_metamorpheus hybrid
 run_metamorpheus gencode
-run_metamorpheus uniprot
+#run_metamorpheus uniprot
 
 echo "#************************************* Generate output tracks"
-#run_peptide_analysis
-#generate_cds_tracks
-#generate_peptide_tracks
+run_peptide_analysis
+generate_cds_tracks
+generate_peptide_tracks
 
 echo "#************************************* Other output data"
-#compare_protein_groups
-#identify_novel_peptides
+compare_protein_groups
+identify_novel_peptides
 
 echo "#***************All done!****************#"
