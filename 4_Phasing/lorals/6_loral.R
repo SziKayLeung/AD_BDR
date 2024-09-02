@@ -37,9 +37,12 @@ merge(tcolStatsAllele, tcolStatsAlleleSum, by = "pbid") %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 # obtain gtf
+dirnames <- list(
+  targ_iso_root = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/A_IsoSeq/",
+  targ_ont_root = "/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/D_ONT/")
 gtf <- list(
   iso = rtracklayer::import(paste0(dirnames$targ_iso_root, "9_sqanti3/full/AllBDRTargeted.collapsed_classification.filtered_lite.gtf")),
-  ont_merged = rtracklayer::import(paste0(dirnames$targ_ont_root, "7_sqanti3/ontBDR_collapsed.filtered_counts_filtered.gtf"))
+  ont_merged = rtracklayer::import(paste0(dirnames$targ_ont_root, "5_cupcake/7_sqanti3/ontBDR_collapsed.filtered_counts_filtered.gtf"))
 )
 gtf <- lapply(gtf, function(x) as.data.frame(x))
 
