@@ -13,10 +13,10 @@ PBTrancript <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD
 classFile[classFile$isoform %in% PBTrancript$V1,]
 CCSTranscript <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/phasing/lorals/chr17_7647112_refAlleleTranscripts_ccs.txt")[["V1"]]
 CCS_c_Transcript <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/phasing/lorals/chr17_7647112_refAlleleTranscripts_ccs_C.txt")[["V1"]]
-CCS_g_Transcript <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/phasing/lorals/chr17_7647112_refAlleleTranscripts_ccs_G.txt")[["V1"]]
+CCS_t_Transcript <- read.table("/lustre/projects/Research_Project-MRC148213/lsl693/AD_BDR/phasing/lorals/chr17_7647112_altAlleleTranscripts_ccs_T.txt")[["V1"]]
 
-setdiff(c(as.character(CCS_c_Transcript), as.character(CCS_G_Transcript)), as.character(CCSTranscript))
-setdiff(as.character(CCSTranscript), c(as.character(CCS_c_Transcript), as.character(CCS_G_Transcript)))
+setdiff(c(as.character(CCS_c_Transcript), as.character(CCS_t_Transcript)), as.character(CCSTranscript))
+setdiff(as.character(CCSTranscript), c(as.character(CCS_c_Transcript), as.character(CCS_t_Transcript)))
 
 tcolStats <- collStats[collStats$pbid %in% PBTrancript$V1,]
 tcolStats$id <- stringr::str_remove(tcolStats$id,"/ccs")
@@ -24,7 +24,7 @@ tcolStats$id <- stringr::str_remove(tcolStats$id,"/ccs")
 identify_reads <- function(isoform){
   
   if(isoform %in% CCS_c_Transcript){return("C")
-  }else if(isoform %in% CCS_g_Transcript){return("G")
+  }else if(isoform %in% CCS_t_Transcript){return("G")
   }else{return("NA")}
   
 }
