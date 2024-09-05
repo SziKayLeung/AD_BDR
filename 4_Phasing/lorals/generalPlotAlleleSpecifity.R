@@ -31,11 +31,19 @@ plot_allele_perTranscript <- function(inputgtf, transcript, refValue, altValue){
     mutate(value = ifelse(position_type == "start", refValue, NA),
            transcript = transcript)
   
-  ref_data <- ref_data %>% mutate(value = ifelse(is.na(value),NA,refValue), transcript = transcript)
-  alt_data <- ref_data %>% mutate(value = ifelse(is.na(value),NA,altValue), transcript = transcript)
-  alt_lines <- ref_lines %>% mutate(value = ifelse(is.na(value),NA,altValue))
+  # Append the final end position to ref_lines
+  last_end <- data.frame(position = max(dat$end), value = refValue, transcript = transcript)
+  ref_lines <- bind_rows(ref_lines, last_end)
+  
+  ref_data <- ref_data %>% mutate(value = ifelse(is.na(value), NA, refValue), transcript = transcript)
+  alt_data <- ref_data %>% mutate(value = ifelse(is.na(value), NA, altValue), transcript = transcript)
+  alt_lines <- ref_lines %>% mutate(value = ifelse(is.na(value), NA, altValue))
+  
+  # Append the final end position to alt_lines
+  last_end_alt <- data.frame(position = max(dat$end), value = altValue, transcript = transcript)
+  alt_lines <- bind_rows(alt_lines, last_end_alt)
   
   output <- list(ref_data, ref_lines, alt_data, alt_lines)
-  names(output) <- c("ref","ref_lines","alt", "alt_lines")
+  names(output) <- c("ref", "ref_lines", "alt", "alt_lines")
   return(output)
 }
